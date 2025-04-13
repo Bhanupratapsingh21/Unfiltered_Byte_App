@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "UnfilteredByte",
+    "slug": "UnfilteredByte",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/logowithoutname.png",
+    "backgroundColor": "#000000",
+    "scheme": "com.unfilteredbyte",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos"
+      },
+      "supportsTablet": true
+    },
+    "android": {
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logowithoutname.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.UnfilteredByte.Byte"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/logowithoutname.png",
+      "backgroundColor": "#000000"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/logowithoutname.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#000000"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "d7881303-1379-4a3a-8d67-88b921b673c8"
+      }
+    }
+  }
+}
