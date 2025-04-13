@@ -160,9 +160,15 @@ export default function ActivitiesByTypeScreen() {
             >
                 {activities.map(activity => (
                     <ActivityCard
-                        key={activity.$id}
                         id={activity.$id}
-                        {...activity}
+                        redirect={`/Trainings/${activity.redirect}?id=${activity.$id}`}
+                        key={activity.$id}
+                        title={activity.title}
+                        description={activity.description}
+                        tags={activity.tags}
+                        duration={activity.duration}
+                        image={activity.image}
+                        colors={activity.colors}
                     />
                 ))}
 
@@ -188,11 +194,10 @@ export default function ActivitiesByTypeScreen() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#F0FFFA",
+        backgroundColor: "#0F0F0F", // Dark theme background
     },
     header: {
         flexDirection: 'row',
@@ -201,7 +206,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 10,
         paddingTop: Platform.OS === 'ios' ? 50 : 20,
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F',
     },
     title: {
         fontFamily: 'Inter-Black',
@@ -209,11 +214,12 @@ const styles = StyleSheet.create({
         flex: 1,
         fontWeight: '800',
         textAlign: 'center',
+        color: '#FFB700', // Cyberpunk neon yellow
     },
     backButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#1E1E1E',
         padding: 8,
-        borderRadius: 8,
+        borderRadius: 10,
         width: 40,
         height: 40,
         alignItems: 'center',
@@ -221,7 +227,7 @@ const styles = StyleSheet.create({
     },
     backButton2: {
         padding: 8,
-        borderRadius: 8,
+        borderRadius: 10,
         width: 40,
         height: 40,
         alignItems: 'center',
@@ -238,16 +244,16 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     errorText: {
-        color: 'red',
+        color: '#FF4A4A',
         fontSize: 16,
         marginBottom: 20,
         textAlign: 'center',
     },
     retryButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         paddingHorizontal: 20,
         paddingVertical: 10,
-        borderRadius: 5,
+        borderRadius: 8,
     },
     retryButtonText: {
         color: 'white',
@@ -262,13 +268,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     endOfListText: {
-        color: '#666',
+        color: '#B0B0B0',
         fontSize: 14,
     },
     fullScreenLoading: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
     },
 });

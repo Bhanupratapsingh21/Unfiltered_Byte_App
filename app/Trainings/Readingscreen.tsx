@@ -89,7 +89,7 @@ export default function ActivityDetailScreen() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1, backgroundColor: "#F0FFFA" }}
+            style={{ flex: 1, backgroundColor: "#0F0F0F" }}
         >
             {/* Sticky Header */}
             <View style={styles.header}>
@@ -171,7 +171,6 @@ export default function ActivityDetailScreen() {
         </KeyboardAvoidingView>
     );
 }
-
 const styles = StyleSheet.create({
     scrollContainer: {
         flex: 1,
@@ -184,20 +183,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingVertical: 5,
+        paddingVertical: 10,
         paddingTop: Platform.OS === 'ios' ? 50 : 20,
         zIndex: 1,
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F',
     },
     title: {
         fontFamily: 'Inter-Black',
-        fontSize: 15,
-        fontWeight: "500",
+        fontSize: 16,
+        fontWeight: "600",
         flex: 1,
         textAlign: 'center',
+        color: '#FFFFFF',
     },
     backButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#292929',
         padding: 8,
         borderRadius: 8,
         width: 40,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     },
     episodeText: {
         fontSize: 14,
-        color: '#04714A',
+        color: '#FFB700',
         fontWeight: '600',
         paddingHorizontal: 20,
         marginBottom: 8,
@@ -219,14 +219,14 @@ const styles = StyleSheet.create({
     contentTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#FFFFFF',
         paddingHorizontal: 20,
         marginBottom: 16,
     },
     description: {
         fontSize: 16,
         lineHeight: 24,
-        color: '#555',
+        color: '#B0B0B0',
         paddingHorizontal: 20,
         marginBottom: 20,
     },
@@ -241,56 +241,57 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     continueButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         padding: 16,
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#04714A',
+        shadowColor: '#FFB700',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.4,
         shadowRadius: 8,
-        elevation: 5,
+        elevation: 6,
     },
     continueButtonText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontSize: 18,
         fontWeight: '600',
     },
     container: {
         flex: 1,
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F',
     },
     loadingContainer: {
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#0F0F0F',
     },
     errorContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        backgroundColor: '#0F0F0F',
     },
     errorText: {
-        color: 'red',
+        color: '#FF3B30',
         fontSize: 16,
         marginBottom: 20,
         textAlign: 'center',
     },
     retryButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 5,
     },
     retryButtonText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontWeight: 'bold',
     },
-
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#04714A',
+        color: '#FFB700',
         paddingHorizontal: 20,
         marginTop: 16,
         marginBottom: 8,
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
     },
     stepNumber: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         width: 24,
         height: 24,
         borderRadius: 12,
@@ -311,13 +312,13 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     stepNumberText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontWeight: 'bold',
     },
     stepText: {
         flex: 1,
         fontSize: 16,
         lineHeight: 22,
-        color: '#333',
+        color: '#B0B0B0',
     },
 });

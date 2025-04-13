@@ -248,11 +248,10 @@ export default function ActivityDetailScreen() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F',
     },
     buttonContainer: {
         position: 'absolute',
@@ -264,12 +263,12 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     backButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#292929',
         padding: 10,
         borderRadius: 15,
     },
     shareButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#292929',
         padding: 10,
         justifyContent: "center",
         alignContent: "center",
@@ -303,45 +302,43 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     name: {
-        color: 'white',
+        color: '#FFFFFF',
         fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 5,
     },
     description: {
-        color: 'white',
+        color: '#B0B0B0',
         fontSize: 16,
-        marginBottom: 10
+        marginBottom: 10,
     },
     dotContainer: {
         position: 'absolute',
         bottom: 20,
         flexDirection: 'row',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
         alignSelf: 'center',
-        width: '100%', // Ensure it spans full width
-        justifyContent: 'center', // Center dots evenly
+        width: '100%',
+        justifyContent: 'center',
     },
     dot: {
-        flex: 1, // Make each dot take equal width
+        width: 8,
         height: 8,
-        backgroundColor: 'white',
+        backgroundColor: '#FFB700',
         marginHorizontal: 4,
         borderRadius: 4,
     },
     bottomScreen: {
         flex: 1,
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#1F1F1F',
         borderTopLeftRadius: 25,
         borderTopRightRadius: 25,
         marginTop: -20,
         paddingTop: 15,
         paddingHorizontal: 20,
-        shadowColor: '#000',
+        shadowColor: '#FFB700',
         shadowOffset: { width: 0, height: -5 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
         elevation: 10,
     },
     panelHandle: {
@@ -351,7 +348,7 @@ const styles = StyleSheet.create({
     handleBar: {
         width: 90,
         height: 5,
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         borderRadius: 3,
     },
     contentContainer: {
@@ -361,9 +358,8 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 15,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#FFFFFF',
         marginBottom: 5,
-
     },
     exerciseHeader: {
         flexDirection: 'row',
@@ -382,7 +378,7 @@ const styles = StyleSheet.create({
     exerciseName: {
         fontSize: 22,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#FFFFFF',
         marginBottom: 5,
     },
     exerciseMeta: {
@@ -395,7 +391,7 @@ const styles = StyleSheet.create({
     },
     metaText: {
         marginLeft: 5,
-        color: '#666',
+        color: '#B0B0B0',
         fontSize: 14,
     },
     tagsContainer: {
@@ -409,20 +405,20 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     distanceTag: {
-        backgroundColor: '#E3F5FF',
+        backgroundColor: '#292929',
     },
     difficultyTag: {
-        backgroundColor: '#E3FFE8',
+        backgroundColor: '#292929',
     },
     tagText: {
         fontSize: 12,
-        color: '#04714A',
+        color: '#FFB700',
         fontWeight: '500',
     },
     descriptionText: {
         fontSize: 15,
         lineHeight: 22,
-        color: '#555',
+        color: '#B0B0B0',
         marginBottom: 25,
     },
     stepsSection: {
@@ -431,7 +427,7 @@ const styles = StyleSheet.create({
     stepsTitle: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#333',
+        color: '#FFFFFF',
         marginBottom: 15,
     },
     stepsContainer: {
@@ -446,13 +442,13 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
     },
     stepNumberText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontWeight: 'bold',
         fontSize: 12,
     },
@@ -460,7 +456,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 15,
         lineHeight: 22,
-        color: '#555',
+        color: '#B0B0B0',
     },
     buttonWrapper: {
         position: 'absolute',
@@ -469,45 +465,46 @@ const styles = StyleSheet.create({
         right: 20,
     },
     continueButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         padding: 16,
         borderRadius: 12,
         alignItems: 'center',
-        shadowColor: '#04714A',
+        shadowColor: '#FFB700',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.3,
         shadowRadius: 8,
         elevation: 5,
     },
     continueButtonText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontSize: 18,
         fontWeight: '600',
     },
     loadingContainer: {
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#0F0F0F',
     },
     errorContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        backgroundColor: '#0F0F0F',
     },
     errorText: {
-        color: 'red',
+        color: '#FF3B30',
         fontSize: 16,
         marginBottom: 20,
         textAlign: 'center',
     },
     retryButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 5,
     },
     retryButtonText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontWeight: 'bold',
     },
-
 });

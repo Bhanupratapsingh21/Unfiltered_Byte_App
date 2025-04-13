@@ -33,21 +33,19 @@ export default function AuthIndexScreen() {
                 <View style={styles.topSection}>
                     <View style={styles.imageContainer}>
                         <Image
-                            source={require("@/assets/images/Signuppages.png")}
+                            source={require("@/assets/images/logomainwithouttegline.png")}
                             style={styles.image}
                             resizeMode="contain"
                         />
                     </View>
                     <View style={styles.progressIndicatorContainer}>
-                        <View style={[styles.progressIndicator, styles.activeProgress]} />
-                        <View style={[styles.progressIndicator, styles.inactiveProgress]} />
-                        <View style={[styles.progressIndicator, styles.inactiveProgress]} />
+
                     </View>
                 </View>
 
                 <View style={styles.bottomSection}>
-                    <Text style={styles.title}>Discover Experiences with a simple swipe</Text>
-                    <Text style={styles.subtitle}>Curated activities at your fingertips</Text>
+                    <Text style={styles.title}>Swipe. Discover. Repeat.</Text>
+                    <Text style={styles.subtitle}>Curated journeys, at your command.</Text>
 
                     {/*
                     <Link href="/auth/login" asChild>
@@ -58,8 +56,8 @@ export default function AuthIndexScreen() {
                    */}
 
                     <Link href="/auth/signup" asChild>
-                        <Pressable style={styles.signUpButton2}>
-                            <Text style={styles.signUpButtonText}>Sign Up</Text>
+                        <Pressable style={styles.signUpButton}>
+                            <Text style={styles.signUpButtonText}>Let's Go</Text>
                         </Pressable>
                     </Link>
                 </View>
@@ -67,22 +65,21 @@ export default function AuthIndexScreen() {
         </ScrollView>
     );
 }
-
 const styles = StyleSheet.create({
     scrollViewContent: {
-        flexGrow: 1
+        flexGrow: 1,
     },
     mainContainer: {
         flex: 1,
         flexDirection: 'column',
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F',
         justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     topSection: {
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F',
         width: '100%',
-        height: '70%'
+        height: '70%',
     },
     imageContainer: {
         flex: 1,
@@ -90,11 +87,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
-        height: '80%'
+        height: '80%',
     },
     image: {
+        width: '80%',
+        height: '100%',
         maxWidth: '100%',
-        maxHeight: '100%'
+        maxHeight: '100%',
     },
     progressIndicatorContainer: {
         height: 'auto',
@@ -102,41 +101,42 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-evenly',
         alignItems: 'center',
-        width: '100%'
+        width: '100%',
     },
     progressIndicator: {
         width: '25%',
         height: 4,
-        borderRadius: 2
+        borderRadius: 2,
     },
     activeProgress: {
-        backgroundColor: '#04714A'
+        backgroundColor: '#FFB700',
     },
     inactiveProgress: {
-        backgroundColor: 'rgba(4, 113, 74, 0.69)'
+        backgroundColor: 'rgba(255, 183, 0, 0.4)',
     },
     bottomSection: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#1F1F1F',
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: '#292929',
         borderRadius: 24,
         paddingHorizontal: 16,
         paddingVertical: 32,
         width: '100%',
-        height: 'auto',
+        height: '100%',
     },
     title: {
         fontSize: 24,
-        fontWeight: '600',
+        fontWeight: '700',
         textAlign: 'center',
         marginBottom: 10,
+        color: '#FFFFFF',
     },
     subtitle: {
         fontSize: 14,
-        color: "#1E1E1E8E",
-        fontWeight: 'normal',
+        color: '#B0B0B0',
+        fontWeight: '400',
         textAlign: 'center',
-        marginVertical: 14
+        marginVertical: 14,
     },
     signUpButton: {
         width: '100%',
@@ -144,8 +144,13 @@ const styles = StyleSheet.create({
         marginVertical: 5,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#04714A',
-        borderRadius: 8
+        backgroundColor: '#ffb700',
+        borderRadius: 8,
+        shadowColor: '#FFB700',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+        elevation: 5,
     },
     signUpButton2: {
         width: '100%',
@@ -153,14 +158,20 @@ const styles = StyleSheet.create({
         marginVertical: 2,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#04714A',
-        borderRadius: 8
+        backgroundColor: '#292929',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     signUpButtonPressed: {
-        opacity: 0.8
+        opacity: 0.8,
     },
     signUpButtonText: {
-        color: 'white',
-        fontSize: 18
-    }
+        color: '#0F0F0F',
+        fontSize: 18,
+        fontWeight: '600',
+    },
 });

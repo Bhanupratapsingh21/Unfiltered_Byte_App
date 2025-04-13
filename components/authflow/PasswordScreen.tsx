@@ -102,84 +102,88 @@ export default function PasswordScreen({
         </TouchableWithoutFeedback>
     );
 }
-
 const styles = StyleSheet.create({
     scrollViewContent: {
-        flexGrow: 1
+        flexGrow: 1,
     },
     mainContainer: {
         width: '100%',
         height: '100%',
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F', // Dark background
         justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     backgroundImage: {
         width: '100%',
         height: undefined,
-        aspectRatio: 1
+        aspectRatio: 1,
     },
     contentWrapper: {
         paddingHorizontal: 24,
         paddingVertical: 20,
         width: '100%',
-        marginTop: -50 // Adjust this to position the card properly over the image
+        marginTop: -50,
     },
     contentCard: {
         borderRadius: 30,
-        backgroundColor: 'white',
+        backgroundColor: '#1F1F1F', // Dark card
         borderWidth: 1,
-        borderColor: '#e5e7eb',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        elevation: 5,
+        borderColor: '#292929',
+        shadowColor: '#FFB700',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
         paddingHorizontal: 25,
-        paddingVertical: 25
+        paddingVertical: 25,
     },
     backButton: {
-        backgroundColor: "white",
+        backgroundColor: '#292929',
         padding: 8,
         width: 40,
         height: 40,
         borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 16
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+        borderColor: '#FFB700',
+        borderWidth: 1,
     },
     textContainer: {
-        marginBottom: 24
+        marginBottom: 24,
     },
     heading: {
         fontSize: 28,
         fontWeight: '700',
-        color: '#000'
+        color: '#FFFFFF', // White heading
     },
     subheading: {
         fontSize: 16,
-        color: 'rgba(0, 0, 0, 0.5)',
-        fontWeight: 'normal',
-        marginVertical: 8
+        color: '#B0B0B0', // Muted white
+        fontWeight: '400',
+        marginVertical: 8,
     },
     inputWrapper: {
         width: '100%',
         marginTop: 16,
-        marginBottom: 8
+        marginBottom: 8,
     },
     input: {
         width: '100%',
         height: 50,
-        backgroundColor: '#F1F1F1',
+        backgroundColor: '#292929',
         borderRadius: 10,
         paddingHorizontal: 16,
-        fontSize: 16
+        fontSize: 16,
+        color: '#FFFFFF',
+        borderColor: '#292929',
+        borderWidth: 1,
     },
     retryText: {
-        color: "#FF3B30",
-        textAlign: "center",
+        color: '#FF3B30',
+        textAlign: 'center',
         marginTop: 8,
-        fontSize: 14
+        fontSize: 14,
     },
     signUpButton: {
         width: '100%',
@@ -187,14 +191,20 @@ const styles = StyleSheet.create({
         marginVertical: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#04714A',
-        borderRadius: 8
+        backgroundColor: '#FFB700',
+        borderRadius: 8,
+        shadowColor: '#FFB700',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.7,
+        shadowRadius: 10,
+        elevation: 8,
     },
     buttonDisabled: {
-        backgroundColor: '#999'
+        backgroundColor: '#666',
     },
     signUpButtonText: {
-        color: 'white',
-        fontSize: 18
-    }
+        color: '#0F0F0F',
+        fontSize: 18,
+        fontWeight: '600',
+    },
 });

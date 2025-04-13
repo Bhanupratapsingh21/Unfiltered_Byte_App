@@ -141,7 +141,7 @@ export default function Indexscreen() {
         {activities.map(activity => (
           <ActivityCard
             id={activity.$id}
-            redirect={`Trainings/${activity.redirect}?id=${activity.$id}`}
+            redirect={`/Trainings/${activity.redirect}?id=${activity.$id}`}
             key={activity.$id}
             title={activity.title}
             description={activity.description}

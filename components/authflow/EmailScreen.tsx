@@ -42,7 +42,7 @@ export default function EmailScreen({ email, setEmail, onNext }: EmailScreenProp
                         <View style={styles.contentCard}>
                             {/* Logo */}
                             <Image
-                                source={require("@/assets/images/logosmall.png")}
+                                source={require("@/assets/images/logowithoutname.png")}
                                 style={styles.logo}
                                 resizeMode="contain"
                             />
@@ -96,68 +96,71 @@ export default function EmailScreen({ email, setEmail, onNext }: EmailScreenProp
         </TouchableWithoutFeedback>
     )
 }
-
 const styles = StyleSheet.create({
     scrollViewContent: {
-        flexGrow: 1
+        flexGrow: 1,
     },
     mainContainer: {
         width: '100%',
         height: '100%',
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F', // Dark mode
         justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     backgroundImage: {
         width: '100%',
         height: undefined,
-        aspectRatio: 1
+        aspectRatio: 1,
     },
     contentWrapper: {
         paddingHorizontal: 24,
         paddingVertical: 20,
-        width: '100%'
+        width: '100%',
     },
     contentCard: {
         borderRadius: 30,
-        backgroundColor: 'white',
+        backgroundColor: '#1F1F1F', // Dark card
         borderWidth: 1,
-        borderColor: '#e5e7eb',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        elevation: 5,
+        borderColor: '#292929', // Subtle border
+        shadowColor: '#FFB700', // Neon effect
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
         paddingHorizontal: 25,
-        paddingVertical: 25
+        paddingVertical: 25,
     },
     logo: {
         width: 56,
         height: 56,
-        marginBottom: 16
+        marginBottom: 16,
+        borderRadius: 8,
     },
     heading: {
         fontSize: 28,
         fontWeight: '700',
-        color: '#000'
+        color: '#FFFFFF', // White text
     },
     subheading: {
         fontSize: 16,
-        color: 'rgba(0, 0, 0, 0.5)',
-        fontWeight: 'normal',
-        marginVertical: 8
+        color: '#B0B0B0', // Muted white
+        fontWeight: '400',
+        marginVertical: 8,
     },
     inputWrapper: {
         width: '100%',
-        marginTop: 16
+        marginTop: 16,
     },
     input: {
         width: '100%',
         height: 50,
-        backgroundColor: '#F1F1F1',
+        backgroundColor: '#292929',
         borderRadius: 10,
         paddingHorizontal: 16,
-        fontSize: 16
+        fontSize: 16,
+        color: '#FFFFFF',
+        borderColor: '#292929',
+        borderWidth: 1,
     },
     signUpButton: {
         width: '100%',
@@ -165,28 +168,41 @@ const styles = StyleSheet.create({
         marginVertical: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#04714A',
-        borderRadius: 8
+        backgroundColor: '#FFB700', // Neon yellow
+        borderRadius: 8,
+        shadowColor: '#FFB700',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.7,
+        shadowRadius: 10,
+        elevation: 8,
     },
     signUpButtonPressed: {
-        opacity: 0.8
+        opacity: 0.8,
     },
     signUpButtonText: {
-        color: 'white',
-        fontSize: 18
+        color: '#0F0F0F',
+        fontSize: 18,
+        fontWeight: '600',
     },
     socialButtonsContainer: {
         flexDirection: 'row',
-        gap: 4,
+        gap: 8,
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     socialButton: {
-        backgroundColor: '#1E1E1E',
+        backgroundColor: '#292929',
         paddingHorizontal: 30,
         paddingVertical: 16,
         borderRadius: 8,
         alignItems: 'center',
-        justifyContent: 'center'
-    }
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#FFB700',
+        shadowColor: '#FFB700',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 6,
+        elevation: 6,
+    },
 });

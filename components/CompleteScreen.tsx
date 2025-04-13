@@ -66,34 +66,36 @@ export default function ThankYouScreen({
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#04714A"
+        backgroundColor: "#0F0F0F", // Dark cyberpunk background
     },
     confettiAnimation: {
         position: "absolute",
-        width: "90%",
-        height: "90%",
+        width: "100%",
+        height: "100%",
     },
     checkmarkAnimation: {
-        width: 200,
-        height: 200
+        width: 220,
+        height: 220,
     },
     successText: {
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: "bold",
-        color: "white",
+        color: "#FFB700", // Neon yellow
         marginBottom: 20,
-        textAlign: "center"
+        textAlign: "center",
+        textShadowColor: "#FFB700",
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
     },
     redirectText: {
         fontSize: 16,
-        color: "white",
+        color: "#B0B0B0",
         textAlign: "center",
-        marginTop: 20
-    }
+        marginTop: 20,
+    },
 });

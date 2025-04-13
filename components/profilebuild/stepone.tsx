@@ -101,10 +101,10 @@ export default function Stepone({
                             onPress={() => setstep(2)}
                             style={styles.backButton}
                         >
-                            <AntDesign name="arrowleft" size={24} color="black" />
+                            <AntDesign name="arrowleft" size={24} color="white" />
                         </Pressable>
                         <View style={styles.stepIndicator}>
-                            <Text>{step}/{totalsteps}</Text>
+                            <Text style={{ color: "#FFFFFF" }}>{step}/{totalsteps}</Text>
                         </View>
                     </View>
 
@@ -217,7 +217,7 @@ export default function Stepone({
                             style={styles.checkbox}
                             value={isChecked}
                             onValueChange={setIsChecked}
-                            color={isChecked ? "#04714A" : undefined}
+                            color={isChecked ? "#FFB700" : undefined}
                         />
                         <Text style={styles.termsText}>
                             I accept the <Text style={styles.termsLink}>Terms and Conditions</Text>
@@ -248,153 +248,165 @@ export default function Stepone({
     );
 }
 
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#F0FFFA"
+        backgroundColor: "#0F0F0F",
     },
     scrollViewContent: {
         flexGrow: 1,
-        padding: 20
+        padding: 20,
     },
     headerContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     backButton: {
-        backgroundColor: "white",
+        backgroundColor: "#292929",
         padding: 8,
         borderRadius: 8,
         width: 40,
         height: 40,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     stepIndicator: {
+
+        color: '#FFFFFF',
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: '#FFB700',
         padding: 8,
         width: 40,
         height: 40,
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: 8
+        borderRadius: 8,
     },
     titleContainer: {
-        marginTop: 30
+        marginTop: 30,
     },
     title: {
         fontSize: 28,
-        fontWeight: '700'
+        fontWeight: '700',
+        color: '#FFFFFF',
     },
     subtitle: {
         fontSize: 16,
-        color: 'rgba(0, 0, 0, 0.5)',
-        fontWeight: 'normal',
-        marginVertical: 8
+        color: '#B0B0B0',
+        fontWeight: '400',
+        marginVertical: 8,
     },
     nameInputContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 20,
-        marginTop: 20
+        marginTop: 20,
     },
     nameInputWrapper: {
-        width: '48%'
+        width: '48%',
     },
     inputLabel: {
         fontWeight: '600',
         fontSize: 14,
-        marginVertical: 8
+        marginVertical: 8,
+        color: '#FFFFFF',
     },
     textInput: {
         height: 50,
-        backgroundColor: "white",
-        borderColor: 'gray',
+        backgroundColor: "#1F1F1F",
+        borderColor: '#292929',
+        color : "#FFFFFF",
         borderWidth: 1,
         borderRadius: 10,
-        padding: 10
+        padding: 10,
     },
     genderContainer: {
-        marginTop: 10
+        marginTop: 10,
     },
     genderOptionsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
     },
     genderOption: {
-        borderColor: 'gray',
+        borderColor: '#292929',
         borderWidth: 1,
         borderRadius: 10,
         padding: 10,
         width: '30%',
-        backgroundColor: 'white',
+        backgroundColor: '#1F1F1F',
         flexDirection: 'row',
         gap: 8,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     genderOptionSelected: {
-        backgroundColor: '#04714A'
+        backgroundColor: '#FFB700',
     },
     genderOptionText: {
-        color: 'black'
+        color: '#B0B0B0',
     },
     genderOptionTextSelected: {
-        color: 'white'
+        color: '#0F0F0F',
+        fontWeight: 'bold',
     },
     inputContainer: {
-        marginTop: 20
+        marginTop: 20,
     },
     locationInputContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 20,
-        marginTop: 10
+        marginTop: 10,
     },
     locationInputWrapper: {
-        width: '48%'
+        width: '48%',
     },
     termsContainer: {
         marginTop: 20,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     checkbox: {
-        borderColor: "#04714A",
+        borderColor: "#FFB700",
         borderRadius: 5,
         width: 20,
-        height: 20
+        height: 20,
+        backgroundColor: '#1F1F1F',
     },
     termsText: {
         paddingLeft: 10,
-        fontWeight: "500"
+        fontWeight: "500",
+        color: '#B0B0B0',
     },
     termsLink: {
-        color: "#04714A",
-        textDecorationLine: "underline"
+        color: "#FFB700",
+        textDecorationLine: "underline",
     },
     buttonContainer: {
         marginBottom: 20,
-        marginTop: 20
+        marginTop: 20,
     },
-
     continueButton: {
         width: '100%',
         height: 55,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#04714A',
-        borderRadius: 8
+        backgroundColor: '#FFB700',
+        borderRadius: 8,
+        shadowColor: '#FFB700',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+        elevation: 5,
     },
     continueButtonPressed: {
-        opacity: 0.8
+        opacity: 0.8,
     },
     continueButtonText: {
-        color: 'white',
-        fontSize: 18
+        color: '#0F0F0F',
+        fontSize: 18,
+        fontWeight: '600',
     },
     submitContainer: {
         marginTop: 30,
@@ -405,19 +417,24 @@ const styles = StyleSheet.create({
         height: 55,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#04714A',
-        borderRadius: 8
+        backgroundColor: '#FFB700',
+        borderRadius: 8,
+        shadowColor: '#FFB700',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+        elevation: 5,
     },
     submitButtonDisabled: {
-        backgroundColor: '#014a30',
+        backgroundColor: '#B0B0B0',
     },
     submitButtonText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontWeight: '600',
         fontSize: 16,
     },
     errorText: {
-        color: 'red',
+        color: '#FF3B30',
         marginBottom: 15,
         textAlign: 'center',
     },

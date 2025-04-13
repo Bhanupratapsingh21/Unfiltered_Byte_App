@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import ActivityCard from "@/components/Home/ActivityCard";
 import ActivityService from "@/lib/activity";
 import { ActivityType } from "@/types/activitycard.types";
+import { Feather } from "@expo/vector-icons";
 
 export default function Indexscreen() {
   const [activities, setActivities] = useState<ActivityType[]>([]);
@@ -95,7 +96,7 @@ export default function Indexscreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1, backgroundColor: "#F0FFFA" }}
+      style={{ flex: 1, backgroundColor: "#0F0F0F" }}
     >
       {/* Sticky Header */}
       <View style={styles.header}>
@@ -106,29 +107,12 @@ export default function Indexscreen() {
         <View style={styles.backButton2} />
       </View>
 
-      {/* Search Bar */}
-      <View style={styles.header}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Search trainings..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
-            returnKeyType="search"
-          />
-          <Pressable
-            style={styles.sendButton}
-            onPress={handleSearch}
-          >
-            <AntDesign
-              name="search1"
-              size={20}
-              color={"#ffffff"}
-            />
-          </Pressable>
-        </View>
-      </View>
+
+      {/* ✅ Search Bar (Pressable, no input here) */}
+      <Pressable style={styles.searchBarContainer}>
+        <Feather name="search" size={20} color="#B0B0B0" style={{ marginRight: 10 }} />
+        <Text style={styles.searchPlaceholder}>Search...</Text>
+      </Pressable>
 
       {/* Scrollable Content */}
       <ScrollView
@@ -138,7 +122,7 @@ export default function Indexscreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={["#04714A"]}
+            colors={["#FFB700"]}
             tintColor="#04714A"
           />
         }
@@ -159,7 +143,7 @@ export default function Indexscreen() {
 
         {loading && activities.length > 0 && (
           <View style={styles.loadingMoreContainer}>
-            <ActivityIndicator size="small" color="#04714A" />
+            <ActivityIndicator size="small" color="#FFB700" />
           </View>
         )}
 
@@ -192,7 +176,6 @@ const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: any)
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 12;
 const CARD_WIDTH = (width - (CARD_MARGIN * 3)) / 2;
-
 const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
@@ -200,9 +183,21 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     borderRadius: 30,
     padding: 5,
-    borderColor: "#04714A",
-    backgroundColor: 'white',
+    borderColor: "#292929",
+    backgroundColor: '#1F1F1F',
     borderWidth: 1,
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginVertical: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#1F1F1F',
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#292929',
   },
   input: {
     flex: 1,
@@ -213,117 +208,34 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 20,
     fontSize: 16,
+    color: '#FFFFFF',
+    backgroundColor: '#0F0F0F',
   },
   sendButton: {
-    backgroundColor: "#04714A",
-    color: "ffffff",
+    backgroundColor: "#FFB700",
     borderRadius: 30,
     padding: 10,
-  },
-  circleContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circleOuter: {
-    position: 'relative',
-    width: 240,
-    height: 240,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  circleMiddle: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: '#aaa',
-  },
-  circleInner: {
-    position: 'absolute',
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderWidth: 1,
-    borderColor: '#888',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: 40,
-    backgroundColor: 'white',
-    height: 40,
-    marginRight: 12,
-    borderRadius: 5, // Circular logo
-  },
-  profileImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 25,
-    marginHorizontal: 8,
-  },
-  headerText: {
-    flexDirection: 'column',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  aiText: {
-    color: '#04714A',
-    fontWeight: 'bold',
-  },
-  flexbox: {
-    height: "auto",
-    alignItems: "flex-start",
-    alignContent: "center",
-    justifyContent: "center",
-  },
-  statusText: {
-    fontSize: 12,
-    color: '#6C6C6C',
-  },
-  menuButton: {
-    borderRadius: 50,
-    backgroundColor: 'white',
-    padding: 10,
-  },
-  imageContainer: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 1,
-    borderColor: '#555',
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  brainImage: {
-    width: '90%',
-    height: '90%',
-    resizeMode: 'contain'
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', // This will properly space the items
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 10,
     paddingTop: Platform.OS === 'ios' ? 50 : 20,
     zIndex: 1,
-    backgroundColor: '#F0FFFA', // Match your background color
+    backgroundColor: '#0F0F0F',
   },
   title: {
     fontFamily: 'Inter-Black',
     fontSize: 20,
     flex: 1,
-    fontWeight: 800,
-    textAlign: 'center', // Center the text
+    fontWeight: '800',
+    textAlign: 'center',
+    color: '#FFFFFF',
   },
   backButton: {
-    backgroundColor: '#04714A',
+    backgroundColor: '#292929',
     padding: 8,
     borderRadius: 8,
     width: 40,
@@ -340,26 +252,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContainer: {
-    paddingTop: 4, // Space for header
+    paddingTop: 4,
     paddingBottom: 70,
-    paddingHorizontal: CARD_MARGIN,
+    paddingHorizontal: 12,
   },
-
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: "#F0FFFA",
+    backgroundColor: "#0F0F0F",
   },
   errorText: {
-    color: 'red',
+    color: '#FF3B30',
     fontSize: 16,
     marginBottom: 20,
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#04714A',
+    backgroundColor: '#FFB700',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,
@@ -377,13 +288,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   endOfListText: {
-    color: '#666',
+    color: '#B0B0B0',
     fontSize: 14,
   },
   fullScreenLoading: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  searchPlaceholder: {
+    color: '#B0B0B0',
+    fontSize: 16,
   },
 });

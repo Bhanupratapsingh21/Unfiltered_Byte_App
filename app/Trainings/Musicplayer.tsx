@@ -278,11 +278,10 @@ export default function ActivityDetailScreen() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F0FFFA',
+        backgroundColor: '#0F0F0F',
     },
     scrollContainer: {
         flex: 1,
@@ -297,12 +296,12 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     backButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#292929',
         padding: 10,
         borderRadius: 15,
     },
     shareButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#292929',
         padding: 10,
         justifyContent: "center",
         alignContent: "center",
@@ -327,21 +326,21 @@ const styles = StyleSheet.create({
         right: 20,
     },
     imageTitle: {
-        color: 'white',
+        color: '#FFFFFF',
         fontSize: 28,
         fontWeight: 'bold',
         marginBottom: 5,
     },
     imageSubtitle: {
-        color: 'white',
+        color: '#B0B0B0',
         fontSize: 18,
-        opacity: 0.8,
     },
     musicPlayer: {
-        backgroundColor: '#F0FFFA',
-        padding: 10,
+        backgroundColor: '#1F1F1F',
+        padding: 14,
         margin: 14,
         marginTop: 0,
+        borderRadius: 12,
     },
     progressBarContainer: {
         marginBottom: 10,
@@ -358,25 +357,24 @@ const styles = StyleSheet.create({
     },
     timeText: {
         fontSize: 14,
-        color: '#666',
+        color: '#B0B0B0',
         fontWeight: '500',
     },
     playerControls: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 0,
     },
     playButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         width: 64,
         height: 64,
         borderRadius: 32,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#04714A',
+        shadowColor: '#FFB700',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
+        shadowOpacity: 0.4,
         shadowRadius: 8,
         elevation: 6,
     },
@@ -387,61 +385,62 @@ const styles = StyleSheet.create({
         right: 20,
     },
     trackButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         padding: 18,
         borderRadius: 14,
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
-        elevation: 4,
+        shadowColor: '#FFB700',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+        elevation: 5,
     },
     trackButtonText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontSize: 18,
         fontWeight: '600',
     },
-
     loadingContainer: {
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#0F0F0F',
     },
     errorContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        backgroundColor: '#0F0F0F',
     },
     errorText: {
-        color: 'red',
+        color: '#FF3B30',
         fontSize: 16,
         marginBottom: 20,
         textAlign: 'center',
     },
     retryButton: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 5,
     },
     retryButtonText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontWeight: 'bold',
     },
     detailsContainer: {
         padding: 20,
-        paddingBottom: 100, // Extra padding for the track button
+        paddingBottom: 100, // Extra padding for track button
     },
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#04714A',
+        color: '#FFB700',
         marginBottom: 10,
     },
     descriptionText: {
         fontSize: 16,
         lineHeight: 24,
-        color: '#333',
+        color: '#B0B0B0',
         marginBottom: 20,
     },
     stepContainer: {
@@ -450,7 +449,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
     },
     stepNumber: {
-        backgroundColor: '#04714A',
+        backgroundColor: '#FFB700',
         width: 24,
         height: 24,
         borderRadius: 12,
@@ -459,13 +458,13 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     stepNumberText: {
-        color: 'white',
+        color: '#0F0F0F',
         fontWeight: 'bold',
     },
     stepText: {
         flex: 1,
         fontSize: 16,
         lineHeight: 22,
-        color: '#333',
+        color: '#B0B0B0',
     },
 });

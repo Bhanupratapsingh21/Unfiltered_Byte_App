@@ -63,8 +63,8 @@ export default function Indexscreen() {
         try {
             // Create or update user profile
             await UserProfileService.ensureUserProfileExists(userdata);
-            await 
-            setuserprofile(userdata)
+            await
+                setuserprofile(userdata)
             setStep(prev => prev + 1);
         } catch (error) {
             console.error("Profile creation failed:", error);
