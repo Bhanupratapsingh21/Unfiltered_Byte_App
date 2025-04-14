@@ -6,16 +6,49 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "67fd386200123c6dad02",
+        "EXPO_PUBLIC_APP_BUNDLE_ID": "UnfilteredByte.app",
+        "EXPO_PUBLIC_APP_PLATFORM": "com.unfilteredbyte",
+        "EXPO_PUBLIC_APP_GOOGLE_CLIENT_ID": "",
+        "EXPO_PUBLIC_APP_GOOGLE_CLIENT_SECRET": "",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ID": "67ea96c5002e6d4644aa",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_USERPROFILECOLLECTION": "67fd3afd0028d53c5981",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_QUESTIONSCOLLECTION": "67fd3af0002e8b9b520d",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ACTIVITYCOLLECTION": "67fd3ae3003bec1f05a0"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "67fd386200123c6dad02",
+        "EXPO_PUBLIC_APP_BUNDLE_ID": "UnfilteredByte.app",
+        "EXPO_PUBLIC_APP_PLATFORM": "com.unfilteredbyte",
+        "EXPO_PUBLIC_APP_GOOGLE_CLIENT_ID": "",
+        "EXPO_PUBLIC_APP_GOOGLE_CLIENT_SECRET": "",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ID": "67ea96c5002e6d4644aa",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_USERPROFILECOLLECTION": "67fd3afd0028d53c5981",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_QUESTIONSCOLLECTION": "67fd3af0002e8b9b520d",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ACTIVITYCOLLECTION": "67fd3ae3003bec1f05a0"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "67fd386200123c6dad02",
+        "EXPO_PUBLIC_APP_BUNDLE_ID": "UnfilteredByte.app",
+        "EXPO_PUBLIC_APP_PLATFORM": "com.unfilteredbyte",
+        "EXPO_PUBLIC_APP_GOOGLE_CLIENT_ID": "",
+        "EXPO_PUBLIC_APP_GOOGLE_CLIENT_SECRET": "",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ID": "67ea96c5002e6d4644aa",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_USERPROFILECOLLECTION": "67fd3afd0028d53c5981",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_QUESTIONSCOLLECTION": "67fd3af0002e8b9b520d",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ACTIVITYCOLLECTION": "67fd3ae3003bec1f05a0"
+      }
     }
   },
   "submit": {

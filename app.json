@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "UnfilteredByte",
-    "slug": "UnfilteredByte",
+    "slug": "Emotions",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logowithoutname.png",
@@ -55,6 +55,7 @@
       "eas": {
         "projectId": "d7881303-1379-4a3a-8d67-88b921b673c8"
       }
-    }
+    },
+    "owner": "bhanupratap21"
   }
 }
