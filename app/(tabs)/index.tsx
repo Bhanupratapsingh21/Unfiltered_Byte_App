@@ -16,7 +16,7 @@ const CARD_WIDTH = (width - (CARD_MARGIN * 3)) / 2;
 export default function Indexscreen() {
   const router = useRouter();
   const [activities, setActivities] = useState<ActivityType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
@@ -55,7 +55,7 @@ export default function Indexscreen() {
   }, []);
 
   useEffect(() => {
-    fetchActivities(1);
+    //fetchActivities(1);
   }, [fetchActivities]);
 
   const onRefresh = useCallback(() => {
@@ -85,7 +85,7 @@ export default function Indexscreen() {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>{error}</Text>
-        <Pressable onPress={() => fetchActivities(1)} style={styles.retryButton}>
+        <Pressable style={styles.retryButton}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
@@ -138,19 +138,6 @@ export default function Indexscreen() {
         }}
         scrollEventThrottle={400}
       >
-        {activities.map(activity => (
-          <ActivityCard
-            id={activity.$id}
-            redirect={`/Trainings/${activity.redirect}?id=${activity.$id}`}
-            key={activity.$id}
-            title={activity.title}
-            description={activity.description}
-            tags={activity.tags}
-            duration={activity.duration}
-            image={activity.image}
-            colors={activity.colors}
-          />
-        ))}
 
         {loading && activities.length > 0 && (
           <View style={styles.loadingMoreContainer}>
