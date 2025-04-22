@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/store/authStore';
 import { databases } from './appwrite';
 import UserProfile from "@/types/userprofile.types";
+import { Query } from 'react-native-appwrite';
 
 // Assert that environment variables are defined
 const databaseId = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID as string;
@@ -11,11 +12,13 @@ if (!databaseId || !userProfileCollectionId) {
 }
 
 interface UpdateData {
-    firstname?: string;
-    lastname?: string;
-    gender?: string;
-    city?: string;
-    country?: string;
+    username?: string,
+    bio?: string,
+    gender?: string,
+    profilepicture?: string,
+    country?: string,
+    category?: string,
+    skills_critaria?: string,
 }
 
 const UserProfileService = {
@@ -27,7 +30,7 @@ const UserProfileService = {
     createUserProfile: async (profileData: UserProfile) => {
         try {
             // Validate required fields
-            if (!profileData.userId || !profileData.firstname || !profileData.lastname) {
+            if (!profileData.userId || !profileData.username || !profileData.githubusername) {
                 throw new Error('Missing required fields: userId, firstname, lastname');
             }
 
@@ -36,12 +39,15 @@ const UserProfileService = {
                 userProfileCollectionId,
                 profileData.userId, // Using userId as document ID
                 {
-                    userid: profileData.userId,
-                    firstname: profileData.firstname,
-                    lastname: profileData.lastname,
+                    userId: profileData.userId,
+                    username: profileData.username,
+                    bio: profileData.bio || '',
+                    githubusername: profileData.githubusername || '',
                     gender: profileData.gender || '',
-                    city: profileData.city || '',
+                    profilepicture: profileData.profilepicture || '',
                     country: profileData.country || '',
+                    category: profileData.category || '',
+                    skills_critaria: profileData.skills_critaria || '',
                 }
             );
         } catch (error) {
@@ -65,11 +71,14 @@ const UserProfileService = {
 
             return {
                 userId: profile.$id,
-                firstname: profile.firstname,
-                lastname: profile.lastname,
+                username: profile.username,
+                bio: profile.bio,
                 gender: profile.gender,
-                city: profile.city,
-                country: profile.country
+                profilepicture: profile.profilepicture,
+                country: profile.country,
+                category: profile.category,
+                skills_critaria: profile.skills_critaria,
+                githubusername: profile.githubusername,
             };
         } catch (error: any) {
             // Handle case where profile doesn't exist
@@ -92,11 +101,13 @@ const UserProfileService = {
             // Create a properly typed update object
             const updateData: UpdateData = {};
 
-            if (updates.firstname !== undefined) updateData.firstname = updates.firstname;
-            if (updates.lastname !== undefined) updateData.lastname = updates.lastname;
-            if (updates.gender !== undefined) updateData.gender = updates.gender;
-            if (updates.city !== undefined) updateData.city = updates.city;
+            if (updates.username !== undefined) updateData.username = updates.username;
+            if (updates.category !== undefined) updateData.category = updates.category;
+            if (updates.bio !== undefined) updateData.bio = updates.bio;
             if (updates.country !== undefined) updateData.country = updates.country;
+            if (updates.gender !== undefined) updateData.gender = updates.gender;
+            if (updates.profilepicture !== undefined) updateData.profilepicture = updates.profilepicture;
+            if (updates.skills_critaria !== undefined) updateData.skills_critaria = updates.skills_critaria;
 
             await databases.updateDocument(
                 databaseId,
@@ -145,7 +156,21 @@ const UserProfileService = {
             console.error('Error ensuring profile exists:', error);
             throw error;
         }
+    },
+    isUsernameTaken: async (username: string): Promise<boolean> => {
+        try {
+            const result = await databases.listDocuments(
+                databaseId,
+                userProfileCollectionId,
+                [Query.equal('username', username)]
+            );
+
+            return result.total > 0;
+        } catch (error) {
+            console.error('Error checking username:', error);
+            throw error;
+        }
     }
-};
+}
 
 export default UserProfileService;

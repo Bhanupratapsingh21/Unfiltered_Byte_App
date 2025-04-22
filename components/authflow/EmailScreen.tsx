@@ -32,7 +32,7 @@ export default function EmailScreen({ email, setEmail, onNext }: EmailScreenProp
                 <View style={styles.mainContainer}>
                     {/* Background Image */}
                     <Image
-                        source={require("@/assets/images/getstartedpagebg.png")}
+                        source={require("@/assets/images/Authstep1.png")}
                         style={styles.backgroundImage}
                         resizeMode="cover"
                     />

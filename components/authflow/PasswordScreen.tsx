@@ -41,7 +41,7 @@ export default function PasswordScreen({
                 <View style={styles.mainContainer}>
                     {/* Background Image */}
                     <Image
-                        source={require("@/assets/images/getstartedpagebg.png")}
+                        source={require("@/assets/images/Logomain2.png")}
                         style={styles.backgroundImage}
                         resizeMode="cover"
                     />
@@ -51,7 +51,7 @@ export default function PasswordScreen({
                         <View style={styles.contentCard}>
                             {/* Back Button */}
                             <Pressable onPress={onBack} style={styles.backButton}>
-                                <AntDesign name="arrowleft" size={24} color="black" />
+                                <AntDesign name="arrowleft" size={24} color="white" />
                             </Pressable>
 
                             {/* Heading */}

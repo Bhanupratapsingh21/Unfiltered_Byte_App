@@ -1,8 +1,11 @@
 export default interface Userprofile {
     userId: string;
-    firstname: string,
-    lastname: string,
+    username: string,
+    bio: string,
     gender: string,
-    city: string,
+    profilepicture: string,
     country: string,
+    githubusername: string,
+    category: string,
+    skills_critaria: string,
 }

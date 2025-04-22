@@ -1,5 +1,5 @@
 // ✅ Full StepOne Cyberpunk styled ✅
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Pressable,
@@ -26,6 +26,7 @@ import userdata from "@/types/userprofile.types";
 import LogoutIcon from "@/assets/icons/Logout";
 import { useAuthStore } from "@/store/authStore";
 import Authdata from "@/types/authdata.types";
+import UserProfileService from "@/lib/userProfileService";
 
 interface OtpScreenProps {
     authData: Authdata;
@@ -75,6 +76,50 @@ export default function Stepone({
             console.error("Submit error:", err);
         }
     };
+    const [isChecked, setIsChecked] = useState(false);
+    const [localError, setLocalError] = useState<string | null>(null);
+    const [fetchingGithub, setFetchingGithub] = useState(false);
+    const [usernameUnique, setUsernameUnique] = useState(false);
+    const [checkingUsername, setCheckingUsername] = useState(false);
+
+
+
+
+
+
+    const validateAndSubmit = () => {
+        if (!userdata.username.trim()) {
+            setLocalError("Username is required.");
+            return;
+        }
+        if (!userdata.gender.trim()) {
+            setLocalError("Please select your gender.");
+            return;
+        }
+        if (!userdata.bio.trim()) {
+            setLocalError("Bio is required.");
+            return;
+        }
+        if (!userdata.country.trim()) {
+            setLocalError("Country is required.");
+            return;
+        }
+        if (!userdata.category.trim()) {
+            setLocalError("Please select your category.");
+            return;
+        }
+        if (!userdata.skills_critaria.trim()) {
+            setLocalError("Please select your skill level.");
+            return;
+        }
+        if (!isChecked) {
+            setLocalError("You must accept the Terms and Conditions.");
+            return;
+        }
+
+        setLocalError(null);
+        onSubmit();
+    };
 
     return (
         <KeyboardAvoidingView
@@ -103,7 +148,7 @@ export default function Stepone({
                     {/* Profile Image */}
                     <View style={styles.profileSection}>
                         <View style={styles.profileImageContainer}>
-                            <Image style={styles.profileImage} source={profileImage} />
+                            <Image style={styles.profileImage} source={{ uri: userdata.profilepicture }} />
                             <Pressable
                                 onPress={() =>
                                     Alert.alert("Coming Soon", "This Feature will be added Soon")
@@ -115,33 +160,43 @@ export default function Stepone({
                         </View>
                     </View>
 
-                    {/* Name Input */}
-                    <View style={styles.nameInputContainer}>
-                        <View style={styles.nameInputWrapper}>
-                            <Text style={styles.inputLabel}>First Name</Text>
-                            <TextInput
-                                placeholder="Your First Name"
-                                placeholderTextColor="#666"
-                                value={userdata.firstname}
-                                onChangeText={(text) =>
-                                    setUserData({ ...userdata, firstname: text })
-                                }
-                                style={styles.textInput}
-                            />
-                        </View>
+                    {/* GitHub Username */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>GitHub Username</Text>
+                        <TextInput
+                            placeholderTextColor={"#B0B0B0"}
+                            placeholder="Your GitHub username"
+                            value={userdata.githubusername}
+                            editable={false}
+                            onChangeText={(text) => setUserData({ ...userdata, githubusername: text })}
+                            style={[styles.textInput, { flex: 1 }]}
+                        />
+                    </View>
 
-                        <View style={styles.nameInputWrapper}>
-                            <Text style={styles.inputLabel}>Last Name</Text>
-                            <TextInput
-                                placeholder="Your Last Name"
-                                placeholderTextColor="#666"
-                                value={userdata.lastname}
-                                onChangeText={(text) =>
-                                    setUserData({ ...userdata, lastname: text })
-                                }
-                                style={styles.textInput}
-                            />
-                        </View>
+                    {/* Username */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Username</Text>
+                        <TextInput
+                            placeholderTextColor={"#B0B0B0"}
+                            placeholder="Choose a username"
+                            value={userdata.username}
+                            editable={false}
+                            onChangeText={(text) => setUserData({ ...userdata, username: text })}
+                            style={[styles.textInput, { flex: 1 }]}
+                        />
+                    </View>
+
+                    {/* Bio */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Bio</Text>
+                        <TextInput
+                            placeholderTextColor={"#B0B0B0"}
+                            placeholder="Tell us about yourself"
+                            value={userdata.bio}
+                            onChangeText={(text) => setUserData({ ...userdata, bio: text })}
+                            style={[styles.textInput, { height: 80 }]}
+                            multiline
+                        />
                     </View>
 
                     {/* Gender Selection */}
@@ -182,19 +237,6 @@ export default function Stepone({
                         </View>
                     </View>
 
-                    {/* Contact Info */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Mobile Number</Text>
-                        <TextInput
-                            placeholder="Your Mobile Number"
-                            placeholderTextColor="#666"
-                            keyboardType="phone-pad"
-                            value={authData.phone}
-                            editable={false}
-                            style={styles.textInput}
-                        />
-                    </View>
-
                     <View style={styles.inputContainer}>
                         <Text style={styles.inputLabel}>Email</Text>
                         <TextInput
@@ -206,32 +248,82 @@ export default function Stepone({
                             style={styles.textInput}
                         />
                     </View>
-
-                    {/* Location Info */}
-                    <View style={styles.locationInputContainer}>
-                        <View style={styles.locationInputWrapper}>
-                            <Text style={styles.inputLabel}>City</Text>
-                            <TextInput
-                                placeholder="Your City"
-                                placeholderTextColor="#666"
-                                value={userdata.city}
-                                onChangeText={(text) =>
-                                    setUserData({ ...userdata, city: text })
-                                }
-                                style={styles.textInput}
-                            />
+                    {/* Country */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Country</Text>
+                        <TextInput
+                            placeholder="Your Country"
+                            placeholderTextColor={"#B0B0B0"}
+                            value={userdata.country}
+                            onChangeText={(text) => setUserData({ ...userdata, country: text })}
+                            style={styles.textInput}
+                        />
+                    </View>
+                    {/* Category Selection */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Category</Text>
+                        <View style={styles.categoryOptionsContainer}>
+                            {["student", "developer"].map((category) => (
+                                <Pressable
+                                    key={category}
+                                    style={[
+                                        styles.categoryOption,
+                                        userdata.category === category && styles.categoryOptionSelected
+                                    ]}
+                                    onPress={() => setUserData({ ...userdata, category })}
+                                >
+                                    <Text style={[
+                                        styles.categoryOptionText,
+                                        userdata.category === category && styles.categoryOptionTextSelected
+                                    ]}>
+                                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                                    </Text>
+                                </Pressable>
+                            ))}
                         </View>
-                        <View style={styles.locationInputWrapper}>
-                            <Text style={styles.inputLabel}>Country</Text>
-                            <TextInput
-                                placeholder="Your Country"
-                                placeholderTextColor="#666"
-                                value={userdata.country}
-                                onChangeText={(text) =>
-                                    setUserData({ ...userdata, country: text })
-                                }
-                                style={styles.textInput}
-                            />
+                    </View>
+
+                    {/* Skills Criteria */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Skill Level</Text>
+                        <View style={styles.skillsOptionsContainer}>
+                            {userdata.category === "developer" ? (
+                                ["1x", "10x", "100x"].map((skill) => (
+                                    <Pressable
+                                        key={skill}
+                                        style={[
+                                            styles.skillOption,
+                                            userdata.skills_critaria === skill && styles.skillOptionSelected
+                                        ]}
+                                        onPress={() => setUserData({ ...userdata, skills_critaria: skill })}
+                                    >
+                                        <Text style={[
+                                            styles.skillOptionText,
+                                            userdata.skills_critaria === skill && styles.skillOptionTextSelected
+                                        ]}>
+                                            {skill}
+                                        </Text>
+                                    </Pressable>
+                                ))
+                            ) : (
+                                ["beginner", "inter", "pro"].map((skill) => (
+                                    <Pressable
+                                        key={skill}
+                                        style={[
+                                            styles.skillOption,
+                                            userdata.skills_critaria === skill && styles.skillOptionSelected
+                                        ]}
+                                        onPress={() => setUserData({ ...userdata, skills_critaria: skill })}
+                                    >
+                                        <Text style={[
+                                            styles.skillOptionText,
+                                            userdata.skills_critaria === skill && styles.skillOptionTextSelected
+                                        ]}>
+                                            {skill.charAt(0).toUpperCase() + skill.slice(1)}
+                                        </Text>
+                                    </Pressable>
+                                ))
+                            )}
                         </View>
                     </View>
 
@@ -504,4 +596,124 @@ const styles = StyleSheet.create({
         color: '#0F0F0F',
         fontWeight: 'bold',
     },
+
+    stepIndicator: {
+        color: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#FFB700',
+        padding: 8,
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 8,
+    },
+    titleContainer: {
+        marginTop: 30,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: '700',
+        color: '#FFFFFF',
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#B0B0B0',
+        fontWeight: '400',
+        marginVertical: 8,
+    },
+    githubContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    githubButton: {
+        backgroundColor: '#FFB700',
+        padding: 10,
+        borderRadius: 8,
+        minWidth: 80,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    githubButtonText: {
+        color: '#0F0F0F',
+        fontWeight: '600',
+    },
+    categoryOptionsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
+    },
+    categoryOption: {
+        borderColor: '#292929',
+        borderWidth: 1,
+        borderRadius: 10,
+        padding: 15,
+        flex: 1,
+        backgroundColor: '#1F1F1F',
+        alignItems: 'center',
+    },
+    categoryOptionSelected: {
+        backgroundColor: '#FFB700',
+    },
+    categoryOptionText: {
+        color: '#B0B0B0',
+    },
+    categoryOptionTextSelected: {
+        color: '#0F0F0F',
+        fontWeight: 'bold',
+    },
+    skillsOptionsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
+    },
+    skillOption: {
+        borderColor: '#292929',
+        borderWidth: 1,
+        borderRadius: 10,
+        padding: 15,
+        flex: 1,
+        backgroundColor: '#1F1F1F',
+        alignItems: 'center',
+    },
+    skillOptionSelected: {
+        backgroundColor: '#FFB700',
+    },
+    skillOptionText: {
+        color: '#B0B0B0',
+    },
+    skillOptionTextSelected: {
+        color: '#0F0F0F',
+        fontWeight: 'bold',
+    },
+    termsContainer: {
+        marginTop: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    checkbox: {
+        borderColor: "#FFB700",
+        borderRadius: 5,
+        width: 20,
+        height: 20,
+        backgroundColor: '#1F1F1F',
+    },
+    termsText: {
+        paddingLeft: 10,
+        fontWeight: "500",
+        color: '#B0B0B0',
+    },
+    termsLink: {
+        color: "#FFB700",
+        textDecorationLine: "underline",
+    },
+    submitContainer: {
+        marginTop: 30,
+        marginBottom: 40,
+    },
+    submitButtonDisabled: {
+        backgroundColor: '#B0B0B0',
+    },
+
 });

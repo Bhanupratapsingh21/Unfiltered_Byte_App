@@ -19,17 +19,19 @@ export default function Indexscreen() {
   const setuserprofile = useAuthStore(state => state.setuserProfile);
 
   const [authData, setauthData] = useState<Authdata>({
-    phone: user?.phone || "",
     email: user?.email || "",
   });
 
   const [userdata, setuserData] = useState<userdata>({
     userId: userprofile?.userId || "",
-    firstname: userprofile?.firstname || "",
-    lastname: userprofile?.lastname || "",
+    username: userprofile?.username || "",
+    bio: userprofile?.bio || "",
     gender: userprofile?.gender || "",
-    city: userprofile?.city || "",
+    category: userprofile?.category || "",
     country: userprofile?.country || "",
+    skills_critaria: userprofile?.skills_critaria || "",
+    profilepicture: userprofile?.profilepicture || "",
+    githubusername: userprofile?.githubusername || "",
   });
 
   const [aboutyou, setAboutYou] = useState<AboutYou>({
@@ -60,10 +62,13 @@ export default function Indexscreen() {
 
       // Prepare updates object
       const updates: Partial<userdata> = {};
-      if (userdata.firstname) updates.firstname = userdata.firstname;
-      if (userdata.lastname) updates.lastname = userdata.lastname;
+      if (userdata.username) updates.username = userdata.username;
+      if (userdata.bio) updates.bio = userdata.bio;
+      if (userdata.githubusername) updates.githubusername = userdata.githubusername;
+      if (userdata.profilepicture) updates.profilepicture = userdata.profilepicture;
+      if (userdata.category) updates.category = userdata.category;
+      if (userdata.skills_critaria) updates.skills_critaria = userdata.skills_critaria;
       if (userdata.gender) updates.gender = userdata.gender;
-      if (userdata.city) updates.city = userdata.city;
       if (userdata.country) updates.country = userdata.country;
 
       // Call Appwrite service
@@ -73,10 +78,13 @@ export default function Indexscreen() {
         ...userprofile,
         ...updates,
         userId: userdata.userId, // Ensure userId is always defined
-        firstname: userdata.firstname || "",
-        lastname: userdata.lastname || "",
+        username: userdata.username || "",
+        bio: userdata.bio || "",
+        profilepicture: userdata.profilepicture || "",
+        category: userdata.category || "",
+        skills_critaria: userdata.skills_critaria || "",
+        githubusername: userdata.githubusername || "",
         gender: userdata.gender || "",
-        city: userdata.city || "",
         country: userdata.country || "",
       });
 

@@ -1,5 +1,5 @@
 // Import Alert if you want to show pop-up, or continue with Text error
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Pressable,
@@ -21,7 +21,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Checkbox from "expo-checkbox";
 import userdata from "@/types/userprofile.types";
 import Authdata from "@/types/authdata.types";
-
+import UserProfileService from "@/lib/userProfileService";
 interface OtpScreenProps {
     userdata: userdata;
     setUserData: (userdata: userdata) => void;
@@ -49,30 +49,96 @@ export default function Stepone({
 }: OtpScreenProps) {
     const [isChecked, setIsChecked] = useState(false);
     const [localError, setLocalError] = useState<string | null>(null);
+    const [fetchingGithub, setFetchingGithub] = useState(false);
+    const [usernameUnique, setUsernameUnique] = useState(false);
+    const [checkingUsername, setCheckingUsername] = useState(false);
+
+
+    useEffect(() => {
+        if (userdata.githubusername) {
+            const timeoutId = setTimeout(() => {
+                fetchGithubData();
+            }, 1000); // 1 second debounce delay
+
+            // Cleanup function to clear the timeout if the effect runs again before the timeout completes
+            return () => clearTimeout(timeoutId);
+        }
+    }, [userdata.githubusername]);
+
+    const checkusernameUnique = async (username: string) => {
+        setCheckingUsername(true);
+        const response = await UserProfileService.isUsernameTaken(username);
+        if (response) {
+            Alert.alert("Username already taken", "Please choose a different username.");
+            setUserData({ ...userdata, username: "" });
+            setUsernameUnique(false);
+        } else {
+            setUsernameUnique(true);
+        }
+        setCheckingUsername(false);
+        return response;
+    };
+
+    useEffect(() => {
+        if (userdata.username) {
+            const timeoutId = setTimeout(() => {
+                checkusernameUnique(userdata.username);
+            }, 1000); // 1 second debounce delay
+
+            // Cleanup function to clear the timeout if the effect runs again before the timeout completes
+            return () => clearTimeout(timeoutId);
+        }
+    }, [userdata.username]);
+
+    const fetchGithubData = async () => {
+        if (!userdata.githubusername) return;
+
+        try {
+            setFetchingGithub(true);
+            const response = await fetch(`https://api.github.com/users/${userdata.githubusername}`);
+            if (!response.ok) throw new Error("GitHub user not found");
+
+            const data = await response.json();
+
+            // Update user data with GitHub info
+            setUserData({
+                ...userdata,
+                profilepicture: data.avatar_url || userdata.profilepicture,
+                bio: data.bio || userdata.bio,
+                country: data.location || userdata.country,
+                username: data.login || userdata.username
+            });
+        } catch (error) {
+            console.error("Failed to fetch GitHub data:", error);
+            setLocalError("Could not fetch GitHub user. Please check the username.");
+        } finally {
+            setFetchingGithub(false);
+        }
+    };
 
     const validateAndSubmit = () => {
-        if (!userdata.firstname.trim()) {
-            setLocalError("First Name is required.");
-            return;
-        }
-        if (!userdata.lastname.trim()) {
-            setLocalError("Last Name is required.");
+        if (!userdata.username.trim()) {
+            setLocalError("Username is required.");
             return;
         }
         if (!userdata.gender.trim()) {
             setLocalError("Please select your gender.");
             return;
         }
-        if (!authData.phone.trim()) {
-            setLocalError("Phone number is required.");
-            return;
-        }
-        if (!userdata.city.trim()) {
-            setLocalError("City is required.");
+        if (!userdata.bio.trim()) {
+            setLocalError("Bio is required.");
             return;
         }
         if (!userdata.country.trim()) {
             setLocalError("Country is required.");
+            return;
+        }
+        if (!userdata.category.trim()) {
+            setLocalError("Please select your category.");
+            return;
+        }
+        if (!userdata.skills_critaria.trim()) {
+            setLocalError("Please select your skill level.");
             return;
         }
         if (!isChecked) {
@@ -80,8 +146,7 @@ export default function Stepone({
             return;
         }
 
-        // If all validations pass
-        setLocalError(null); // Clear any previous error
+        setLocalError(null);
         onSubmit();
     };
 
@@ -96,6 +161,7 @@ export default function Stepone({
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                 >
+
                     <View style={styles.headerContainer}>
                         <Pressable
                             onPress={() => setstep(2)}
@@ -115,27 +181,65 @@ export default function Stepone({
                         </Text>
                     </View>
 
-                    {/* First & Last Name */}
-                    <View style={styles.nameInputContainer}>
-                        <View style={styles.nameInputWrapper}>
-                            <Text style={styles.inputLabel}>First Name</Text>
+
+                    {/* GitHub Username */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>GitHub Username</Text>
+                        <View style={styles.githubContainer}>
                             <TextInput
-                                placeholder="Your First Name"
-                                value={userdata.firstname}
-                                onChangeText={(text) => setUserData({ ...userdata, firstname: text })}
-                                style={styles.textInput}
+                                placeholderTextColor={"#B0B0B0"}
+                                placeholder="Your GitHub username"
+                                value={userdata.githubusername}
+                                onChangeText={(text) => setUserData({ ...userdata, githubusername: text })}
+                                style={[styles.textInput, { flex: 1 }]}
                             />
+                            <TouchableOpacity
+                                style={styles.githubButton}
+                                onPress={fetchGithubData}
+                                disabled={fetchingGithub || !userdata.githubusername}
+                            >
+                                {fetchingGithub ? (
+                                    <ActivityIndicator size="small" color="white" />
+                                ) : (
+                                    <Text style={styles.githubButtonText}>Fetch</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Username */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Username</Text>
+                        <View style={styles.githubContainer}>
+                            <TextInput
+                                placeholderTextColor={"#B0B0B0"}
+                                placeholder="Choose a username"
+                                value={userdata.username}
+                                onChangeText={(text) => setUserData({ ...userdata, username: text })}
+                                style={[styles.textInput, { flex: 1 }]}
+                            />
+                            {checkingUsername ? (
+                                <ActivityIndicator size="small" color="white" />
+                            ) : usernameUnique ? (
+                                <FontAwesome name="check" size={24} color="green" />
+                            ) : (
+                                <FontAwesome name="times" size={24} color="red" />
+                            )}
                         </View>
 
-                        <View style={styles.nameInputWrapper}>
-                            <Text style={styles.inputLabel}>Last Name</Text>
-                            <TextInput
-                                placeholder="Your Last Name"
-                                value={userdata.lastname}
-                                onChangeText={(text) => setUserData({ ...userdata, lastname: text })}
-                                style={styles.textInput}
-                            />
-                        </View>
+                    </View>
+
+                    {/* Bio */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Bio</Text>
+                        <TextInput
+                            placeholderTextColor={"#B0B0B0"}
+                            placeholder="Tell us about yourself"
+                            value={userdata.bio}
+                            onChangeText={(text) => setUserData({ ...userdata, bio: text })}
+                            style={[styles.textInput, { height: 80 }]}
+                            multiline
+                        />
                     </View>
 
                     {/* Gender Selection */}
@@ -151,9 +255,9 @@ export default function Stepone({
                                     ]}
                                     onPress={() => setUserData({ ...userdata, gender })}
                                 >
-                                    {gender === "male" && <FontAwesome name="mars" size={20} color={userdata.gender === gender ? "white" : "black"} />}
-                                    {gender === "female" && <FontAwesome name="venus" size={20} color={userdata.gender === gender ? "white" : "black"} />}
-                                    {gender === "other" && <FontAwesome name="genderless" size={20} color={userdata.gender === gender ? "white" : "black"} />}
+                                    {gender === "male" && <FontAwesome name="mars" size={20} color={userdata.gender === gender ? "white" : "white"} />}
+                                    {gender === "female" && <FontAwesome name="venus" size={20} color={userdata.gender === gender ? "white" : "white"} />}
+                                    {gender === "other" && <FontAwesome name="genderless" size={20} color={userdata.gender === gender ? "white" : "white"} />}
                                     <Text style={[
                                         styles.genderOptionText,
                                         userdata.gender === gender && styles.genderOptionTextSelected
@@ -164,23 +268,11 @@ export default function Stepone({
                             ))}
                         </View>
                     </View>
-
-                    {/* Phone */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Mobile Number</Text>
-                        <TextInput
-                            placeholder="Your Mobile Number"
-                            keyboardType="phone-pad"
-                            value={authData.phone}
-                            onChangeText={(text) => setauthData({ ...authData, phone: text })}
-                            style={styles.textInput}
-                        />
-                    </View>
-
                     {/* Email */}
                     <View style={styles.inputContainer}>
                         <Text style={styles.inputLabel}>Email</Text>
                         <TextInput
+                            placeholderTextColor={"#B0B0B0"}
                             placeholder="Your Email"
                             keyboardType="email-address"
                             value={authData.email}
@@ -189,25 +281,84 @@ export default function Stepone({
                         />
                     </View>
 
-                    {/* City & Country */}
-                    <View style={styles.locationInputContainer}>
-                        <View style={styles.locationInputWrapper}>
-                            <Text style={styles.inputLabel}>City</Text>
-                            <TextInput
-                                placeholder="Your City"
-                                value={userdata.city}
-                                onChangeText={(text) => setUserData({ ...userdata, city: text })}
-                                style={styles.textInput}
-                            />
+                    {/* Country */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Country</Text>
+                        <TextInput
+                            placeholder="Your Country"
+                            placeholderTextColor={"#B0B0B0"}
+                            value={userdata.country}
+                            onChangeText={(text) => setUserData({ ...userdata, country: text })}
+                            style={styles.textInput}
+                        />
+                    </View>
+
+
+                    {/* Category Selection */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Category</Text>
+                        <View style={styles.categoryOptionsContainer}>
+                            {["student", "developer"].map((category) => (
+                                <Pressable
+                                    key={category}
+                                    style={[
+                                        styles.categoryOption,
+                                        userdata.category === category && styles.categoryOptionSelected
+                                    ]}
+                                    onPress={() => setUserData({ ...userdata, category })}
+                                >
+                                    <Text style={[
+                                        styles.categoryOptionText,
+                                        userdata.category === category && styles.categoryOptionTextSelected
+                                    ]}>
+                                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                                    </Text>
+                                </Pressable>
+                            ))}
                         </View>
-                        <View style={styles.locationInputWrapper}>
-                            <Text style={styles.inputLabel}>Country</Text>
-                            <TextInput
-                                placeholder="Your Country"
-                                value={userdata.country}
-                                onChangeText={(text) => setUserData({ ...userdata, country: text })}
-                                style={styles.textInput}
-                            />
+                    </View>
+
+                    {/* Skills Criteria */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Skill Level</Text>
+                        <View style={styles.skillsOptionsContainer}>
+                            {userdata.category === "developer" ? (
+                                ["1x", "10x", "100x"].map((skill) => (
+                                    <Pressable
+                                        key={skill}
+                                        style={[
+                                            styles.skillOption,
+                                            userdata.skills_critaria === skill && styles.skillOptionSelected
+                                        ]}
+                                        onPress={() => setUserData({ ...userdata, skills_critaria: skill })}
+                                    >
+                                        <Text style={[
+                                            styles.skillOptionText,
+                                            userdata.skills_critaria === skill && styles.skillOptionTextSelected
+                                        ]}>
+                                            {skill}
+                                        </Text>
+                                    </Pressable>
+                                ))
+                            ) : (
+                                ["beginner", "inter", "pro"].map((skill) => (
+                                    <Pressable
+                                        key={skill}
+                                        style={[
+                                            styles.skillOption,
+                                            userdata.skills_critaria === skill && styles.skillOptionSelected
+                                        ]}
+                                        onPress={() => setUserData({ ...userdata, skills_critaria: skill })}
+                                    >
+                                        <Text style={[
+                                            styles.skillOptionText,
+                                            userdata.skills_critaria === skill && styles.skillOptionTextSelected
+                                        ]}>
+                                            {skill.charAt(0).toUpperCase() + skill.slice(1)}
+                                        </Text>
+                                    </Pressable>
+                                ))
+                            )}
                         </View>
                     </View>
 
@@ -241,7 +392,6 @@ export default function Stepone({
                             )}
                         </TouchableOpacity>
                     </View>
-
                 </ScrollView>
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
@@ -272,7 +422,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     stepIndicator: {
-
         color: '#FFFFFF',
         borderWidth: 1,
         borderColor: '#FFB700',
@@ -297,14 +446,8 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         marginVertical: 8,
     },
-    nameInputContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: 20,
+    inputContainer: {
         marginTop: 20,
-    },
-    nameInputWrapper: {
-        width: '48%',
     },
     inputLabel: {
         fontWeight: '600',
@@ -313,10 +456,11 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
     textInput: {
+        color: '#FFFFFF',
         height: 50,
         backgroundColor: "#1F1F1F",
         borderColor: '#292929',
-        color : "#FFFFFF",
+
         borderWidth: 1,
         borderRadius: 10,
         padding: 10,
@@ -350,17 +494,70 @@ const styles = StyleSheet.create({
         color: '#0F0F0F',
         fontWeight: 'bold',
     },
-    inputContainer: {
-        marginTop: 20,
+    githubContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
     },
-    locationInputContainer: {
+    githubButton: {
+        backgroundColor: '#FFB700',
+        padding: 10,
+        borderRadius: 8,
+        minWidth: 80,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    githubButtonText: {
+        color: '#0F0F0F',
+        fontWeight: '600',
+    },
+    categoryOptionsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        gap: 20,
-        marginTop: 10,
+        gap: 10,
     },
-    locationInputWrapper: {
-        width: '48%',
+    categoryOption: {
+        borderColor: '#292929',
+        borderWidth: 1,
+        borderRadius: 10,
+        padding: 15,
+        flex: 1,
+        backgroundColor: '#1F1F1F',
+        alignItems: 'center',
+    },
+    categoryOptionSelected: {
+        backgroundColor: '#FFB700',
+    },
+    categoryOptionText: {
+        color: '#B0B0B0',
+    },
+    categoryOptionTextSelected: {
+        color: '#0F0F0F',
+        fontWeight: 'bold',
+    },
+    skillsOptionsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
+    },
+    skillOption: {
+        borderColor: '#292929',
+        borderWidth: 1,
+        borderRadius: 10,
+        padding: 15,
+        flex: 1,
+        backgroundColor: '#1F1F1F',
+        alignItems: 'center',
+    },
+    skillOptionSelected: {
+        backgroundColor: '#FFB700',
+    },
+    skillOptionText: {
+        color: '#B0B0B0',
+    },
+    skillOptionTextSelected: {
+        color: '#0F0F0F',
+        fontWeight: 'bold',
     },
     termsContainer: {
         marginTop: 20,
@@ -382,31 +579,6 @@ const styles = StyleSheet.create({
     termsLink: {
         color: "#FFB700",
         textDecorationLine: "underline",
-    },
-    buttonContainer: {
-        marginBottom: 20,
-        marginTop: 20,
-    },
-    continueButton: {
-        width: '100%',
-        height: 55,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#FFB700',
-        borderRadius: 8,
-        shadowColor: '#FFB700',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 6,
-        elevation: 5,
-    },
-    continueButtonPressed: {
-        opacity: 0.8,
-    },
-    continueButtonText: {
-        color: '#0F0F0F',
-        fontSize: 18,
-        fontWeight: '600',
     },
     submitContainer: {
         marginTop: 30,

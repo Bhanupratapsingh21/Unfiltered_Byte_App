@@ -13,7 +13,7 @@ import userdata from "@/types/userprofile.types";
 
 export default function Indexscreen() {
     const user = useAuthStore(state => state.user);
-    const [total, setTotal] = useState(3);
+    const [total, setTotal] = useState(2);
     const [step, setStep] = useState(1); // Start with step 1
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
@@ -21,17 +21,19 @@ export default function Indexscreen() {
     const userprofile = useAuthStore(state => state.userProfile);
     const setuserprofile = useAuthStore(state => state.setuserProfile);
     const [authData, setauthData] = useState<Authdata>({
-        phone: user?.phone || "",
         email: user?.email || "",
     });
 
     const [userdata, setUserData] = useState<userdata>({
         userId: user?.$id || "",
-        firstname: userprofile?.firstname || "",
-        lastname: userprofile?.lastname || "",
-        gender: userprofile?.gender || "",
-        city: userprofile?.city || "",
-        country: userprofile?.country || "",
+        username: "",
+        bio: "",
+        gender: "",
+        profilepicture: "",
+        country: "",
+        githubusername: "",
+        category: "",
+        skills_critaria: "",
     });
     const [aboutyou, setAboutYou] = useState<AboutYou>({
         "Have you ever worked on your mental health?": "",
@@ -52,7 +54,7 @@ export default function Indexscreen() {
             return;
         }
 
-        if (!userdata.firstname || !userdata.lastname) {
+        if (!userdata.username || !userdata.userId) {
             setSubmitError("First name and last name are required");
             return;
         }
@@ -115,18 +117,6 @@ export default function Indexscreen() {
                 />
             )}
             {step === 2 && (
-                <Steptwo
-                    step={step}
-                    totalsteps={total}
-                    aboutyou={aboutyou}
-                    setAboutYou={setAboutYou}
-                    setstep={setStep}
-                    onSubmit={handleAboutYouSubmit}
-                    isSubmitting={isSubmitting}
-                    error={submitError}
-                />
-            )}
-            {step === 3 && (
                 <ThankYouScreen redirectTo="/" />
             )}
         </KeyboardAvoidingView>
