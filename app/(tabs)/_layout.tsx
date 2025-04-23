@@ -1,75 +1,86 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
-import SvgHome from "@/assets/icons/Home";
-import SvgEmojiHappy from "@/assets/icons/EmojiHappy";
-import SvgClipboardText from "@/assets/icons/ClipboardText";
-import SvgUser from "@/assets/icons/User";
-import TabBarBackground from "@/components/ui/TabBarBackground";
+import { Platform, View } from "react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { HapticTab } from "@/components/HapticTab";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const activeColor = "#F2F2F2"; // Active tab color
-  const inactiveColor = colorScheme === 'dark' ? '#8A8A8A' : '#8A8A8A'; // Adjust inactive color
+  const activeColor = "#F2F2F2";
+  const inactiveColor = "#8A8A8A";
 
   return (
     <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: activeColor, // Active icon & text color
-        tabBarInactiveTintColor: inactiveColor, // Inactive color
+      screenOptions={({ route }) => ({
+        tabBarActiveTintColor: activeColor,
+        tabBarInactiveTintColor: inactiveColor,
         headerShown: false,
-        tabBarButton: HapticTab,
+        tabBarButton: (props) => <HapticTab {...props} />,
         tabBarStyle: {
           position: 'absolute',
-          backgroundColor: '#121212', // Background color
-          borderTopLeftRadius: 20, // Rounded top corners
-          borderTopRightRadius: 20,
-          elevation: 5, // Shadow for Android
-          shadowColor: "#000",
           borderColor: "#121212",
-          shadowOffset: { width: 0, height: -3 }, // Elevate tab bar
+          backgroundColor: '#121212',
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          height: 70,
+          elevation: 10,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -5 },
           shadowOpacity: 0.1,
-          shadowRadius: 5,
-          height: 75,
-          paddingTop: 5,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 10, // Adjust padding
+          shadowRadius: 10,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 10,
+        },
+        tabBarIcon: ({ focused, color }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = "home";
+          switch (route.name) {
+            case "index":
+              iconName = focused ? "home" : "home-outline";
+              break;
+            case "Explore":
+              iconName = focused ? "compass" : "compass-outline";
+              break;
+            case "Wellness":
+              iconName = focused ? "heart-circle" : "heart-circle-outline";
+              break;
+            case "Profile":
+              iconName = focused ? "person" : "person-outline";
+              break;
+            case "Activities":
+              iconName = focused ? "checkmark-circle" : "checkmark-circle-outline";
+              break;
+          }
+
+          return (
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: focused ? -10 : 0,
+                backgroundColor: focused ? "#1F1F1F" : "transparent",
+                padding: 2,
+                borderRadius: 50,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: focused ? 0.2 : 0,
+                shadowRadius: 5,
+              }}
+            >
+              <Ionicons name={iconName} size={22} color={color} />
+            </View>
+          );
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: 'bold',
+          fontWeight: "600",
         },
-      }}
+      })}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => <SvgHome fill={color} width={20} height={20} />,
-        }}
-      />
-      <Tabs.Screen
-        name="chatbot"
-        options={{
-          title: "Chatbot",
-          tabBarIcon: ({ color }) => <SvgEmojiHappy fill={color} width={20} height={20} />,
-        }}
-      />
-      <Tabs.Screen
-        name="info"
-        options={{
-          title: "Info",
-          tabBarIcon: ({ color }) => <SvgClipboardText fill={color} width={20} height={20} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) => <SvgUser fill={color} width={20} height={20} />,
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: "Home" }} />
+      <Tabs.Screen name="Explore" options={{ title: "Explore" }} />
+      <Tabs.Screen name="Activities" options={{ title: "Activities" }} />
+      <Tabs.Screen name="Wellness" options={{ title: "Wellness" }} />
+      <Tabs.Screen name="Profile" options={{ title: "Profile" }} />
     </Tabs>
   );
 }

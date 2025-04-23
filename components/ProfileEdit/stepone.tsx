@@ -194,7 +194,7 @@ export default function Stepone({
                             placeholder="Tell us about yourself"
                             value={userdata.bio}
                             onChangeText={(text) => setUserData({ ...userdata, bio: text })}
-                            style={[styles.textInput, { height: 80 }]}
+                            style={[styles.textInput, { height: "auto" }]}
                             multiline
                         />
                     </View>

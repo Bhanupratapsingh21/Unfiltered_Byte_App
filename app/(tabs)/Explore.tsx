@@ -18,6 +18,7 @@ import StreakCard from "@/components/Home/StreakCard";
 import BlogCard from "@/components/PostCard";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
+import Spinner from "@/components/LoadingCircle";
 
 const { width, height } = Dimensions.get("window");
 
@@ -119,34 +120,11 @@ export default function IndexScreen() {
           ))}
         </ScrollView>
 
-        {/* Posts */}
-        <View style={{ paddingHorizontal: 16, paddingBottom: 150 }}>
-          {[...Array(3)].map((_, i) => (
-            <BlogCard
-              key={i}
-              userImage="https://res.cloudinary.com/dxae5w6hn/image/upload/v1744973037/yskwzkzfhth1kqokeu9q.png"
-              userName={i % 2 === 0 ? "Son of John Doe" : "John Doe"}
-              userDesignation={i % 2 === 0 ? "Tech lead" : "UI Designer"}
-              caption={
-                i === 0
-                  ? "Twitter’s Community Notes is probably the best fact checking system that I’ve come across."
-                  : i === 1
-                    ? "This is a beautiful sunset view from my recent trip to the mountains."
-                    : "Your work is going to fill a large part of your life — Steve Jobs"
-              }
-              postImage={i === 1 ? "https://res.cloudinary.com/dxae5w6hn/image/upload/v1744973313/gpqrdgxxvw5canwyvjts.png" : undefined}
-              likesCount={i * 10 + 3}
-              commentsCount={i * 2 + 1}
-              isLiked={true}
-              isSaved={false}
-              onMenuPress={() => { }}
-              onLikePress={() => { }}
-              onCommentPress={() => { }}
-              onSharePress={() => { }}
-              onSavePress={() => { }}
-            />
-          ))}
+        <View className="flex justify-center items-center gap-2 mt-4">
+          <Spinner />
         </View>
+
+
       </Animated.ScrollView>
     </View>
   );

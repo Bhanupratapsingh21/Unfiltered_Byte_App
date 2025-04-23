@@ -15,7 +15,6 @@ import {
     ActivityIndicator,
     Alert,
 } from "react-native";
-import { Link } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Checkbox from "expo-checkbox";
@@ -237,7 +236,7 @@ export default function Stepone({
                             placeholder="Tell us about yourself"
                             value={userdata.bio}
                             onChangeText={(text) => setUserData({ ...userdata, bio: text })}
-                            style={[styles.textInput, { height: 80 }]}
+                            style={[styles.textInput, { height: "auto" }]}
                             multiline
                         />
                     </View>

@@ -21,7 +21,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
-const TAGS = ["#SRHvsMI", "#Pakistan", "#RohitSharma", "#MI", "#Umpire", "#SAARC"];
+const TAGS = ["#Internship", "#Stress", "#Blame", "#Sorrow", "#Happiness", "#Burnout"];
 
 export default function IndexScreen() {
   const router = useRouter();
@@ -216,6 +216,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 8,
   },
   tagText: {
     color: "#fff",
