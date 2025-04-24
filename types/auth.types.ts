@@ -11,6 +11,11 @@ export interface User {
     createdAt: string;
 }
 
+export interface Streak {
+    streak: any,
+    longest: any
+}
+
 export interface AuthState {
     user: User | null;
     userProfile: Userprofile | null;
@@ -18,6 +23,7 @@ export interface AuthState {
     isLoading: boolean;
     sessionChecked: boolean;
     lastActivity: number | null;
+    Streak: Streak | null; // Replace with actual type if available
     checkSession: () => Promise<boolean>;
     setUser: (user: User | null) => Promise<void>;
     setuserProfile: (userProfile: Userprofile | null) => Promise<void>;

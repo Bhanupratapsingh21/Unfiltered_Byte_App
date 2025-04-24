@@ -9,12 +9,9 @@ const CARD_HEIGHT = 184;
 export default function StreakCard() {
     const userprofile = useAuthStore(state => state.userProfile);
     const user = useAuthStore(state => state.user);
-    const lastactivity = useAuthStore(state => state.lastActivity);
-    const lastactivityDate = lastactivity ? new Date(lastactivity) : new Date(0); // Default to epoch if null
-    const currentDate = new Date();
-    const timeDiff = Math.abs(currentDate.getTime() - lastactivityDate.getTime());
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    const streak = diffDays > 1 ? 0 : diffDays;
+    const streaks = useAuthStore(state => state.Streak);
+
+    const streak = streaks?.streak || 1;
     const streakText = streak > 1 ? `${streak} days` : `${streak} day`;
     return (
 

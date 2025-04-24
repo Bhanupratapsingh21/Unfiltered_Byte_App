@@ -56,8 +56,8 @@ export default function TabLayout() {
               style={{
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginTop: focused ? -10 : 0,
-                backgroundColor: focused ? "#1F1F1F" : "transparent",
+                marginTop: focused ? -20 : 0,
+                backgroundColor: focused ? "transparent" : "transparent",
                 padding: 2,
                 borderRadius: 50,
                 shadowColor: "#000",
@@ -66,7 +66,7 @@ export default function TabLayout() {
                 shadowRadius: 5,
               }}
             >
-              <Ionicons name={iconName} size={22} color={color} />
+              <Ionicons name={iconName} size={25} color={color} />
             </View>
           );
         },

@@ -7,6 +7,7 @@ import { AppState } from 'react-native';
 import { AuthState, User } from '@/types/auth.types';
 import UserProfileService from '@/lib/userProfileService';
 import Userprofile from '@/types/userprofile.types';
+import { checkAndUpdateStreak } from '@/lib/Streaks_Service';
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
 export const useAuthStore = create<AuthState>()(
@@ -18,6 +19,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             sessionChecked: false,
             lastActivity: null,
+            Streak: null,
 
             initializeAuth: async () => {
                 set({ isLoading: true });
@@ -57,12 +59,16 @@ export const useAuthStore = create<AuthState>()(
                     };
 
                     await SecureStore.setItemAsync('user', JSON.stringify(formattedUser));
+                    //console.log("User", formattedUser);
+                    const Streak = await checkAndUpdateStreak(formattedUser["$id"]);
+                    //console.log("Streak", Streak);
                     const userProfile = await UserProfileService.getUserProfile(user.$id);
                     set({
                         user: formattedUser,
                         isAuthenticated: true,
                         lastActivity: Date.now(),
-                        userProfile: userProfile
+                        userProfile: userProfile,
+                        Streak: Streak,
                     });
 
                     return true;

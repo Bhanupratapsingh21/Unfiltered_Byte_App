@@ -12,10 +12,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
-import NotificationIcon from "@/assets/icons/Bellicon";
 import { useAuthStore } from "@/store/authStore";
 import StreakCard from "@/components/Home/StreakCard";
-import BlogCard from "@/components/PostCard";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import Spinner from "@/components/LoadingCircle";
@@ -181,7 +179,7 @@ const styles = StyleSheet.create({
   },
   tagContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 10,
+    paddingBottom: 15,
     gap: 8,
     height: 60,
     alignItems: "center",

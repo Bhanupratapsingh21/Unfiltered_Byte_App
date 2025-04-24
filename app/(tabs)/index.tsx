@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   tagContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 10,
+    paddingBottom: 15,
     gap: 8,
     height: 60,
     alignItems: "center",
