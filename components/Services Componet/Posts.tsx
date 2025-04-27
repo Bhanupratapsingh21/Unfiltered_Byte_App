@@ -87,7 +87,11 @@ export default function Posts() {
 
   const renderFooter = () => {
     if (!loading) return null;
-    return <Spinner />;
+    return (
+      <View className="flex justify-center items-center gap-2  p-14">
+        <Spinner />
+      </View>
+    );
   };
 
   if (error) {

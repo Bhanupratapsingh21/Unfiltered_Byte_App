@@ -37,8 +37,8 @@ interface CloudinaryResponse {
 }
 
 // Constants
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dxae5w6hn/image/upload";
-const UPLOAD_PRESET = "emotions";
+const CLOUDINARY_URL = process.env.EXPO_PUBLIC_CLOUDINARY_URL || "https://api.cloudinary.com/v1_1/dhvkjanwa/image/upload";
+const UPLOAD_PRESET = process.env.EXPO_PUBLIC_UPLOAD_PRESET || "unfilterbytepreset";
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || "http://192.168.1.9:4000";
 
@@ -47,6 +47,7 @@ const TweetPostScreen = () => {
     const router = useRouter();
     const [content, setContent] = useState('');
     const [topTitle, setTopTitle] = useState('');
+    const [tags, setTags] = useState<string>("");
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [coverImage, setCoverImage] = useState<ImagePickerAsset | null>(null);
     const [cloudinaryImageData, setCloudinaryImageData] = useState<CloudinaryResponse | null>(null);
@@ -83,7 +84,6 @@ const TweetPostScreen = () => {
         })();
     }, []);
 
-    // Function to pick an image
     const pickImage = async (source: 'camera' | 'gallery') => {
         if (networkStatus === 'disconnected') {
             Alert.alert('Network Error', 'Please check your internet connection');
@@ -95,16 +95,14 @@ const TweetPostScreen = () => {
             if (source === 'camera') {
                 result = await ImagePicker.launchCameraAsync({
                     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    aspect: [4, 3],
-                    quality: 0.7,
+                    allowsEditing: false, // Disable cropping
+                    quality: 1, // Full quality
                 });
             } else {
                 result = await ImagePicker.launchImageLibraryAsync({
                     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    aspect: [4, 3],
-                    quality: 0.7,
+                    allowsEditing: false, // Disable cropping
+                    quality: 1, // Full quality
                 });
             }
 
@@ -117,9 +115,8 @@ const TweetPostScreen = () => {
                 }
 
                 setCoverImage(result.assets[0]);
-                setCloudinaryImageData(null); // Reset uploaded image if new selected
-                setError(''); // Clear any previous errors
-                console.log("Selected image:", result.assets[0]);
+                setCloudinaryImageData(null);
+                setError('');
             }
         } catch (err) {
             console.error('Error picking image:', err);
@@ -144,12 +141,7 @@ const TweetPostScreen = () => {
         const fileExtension = uriParts[uriParts.length - 1];
         const fileName = `upload_${Date.now()}.${fileExtension}`;
 
-        // For debugging
-        console.log('Uploading image:', {
-            uri: image.uri,
-            type: `image/${fileExtension}`,
-            name: fileName
-        });
+
 
         // Append file to form with proper format for React Native
         formData.append('file', {
@@ -159,10 +151,7 @@ const TweetPostScreen = () => {
         } as any);
 
         try {
-            // Log beginning of upload
-            console.log('Starting Cloudinary upload...');
-            console.log('Upload URL:', CLOUDINARY_URL);
-            console.log('Upload preset:', UPLOAD_PRESET);
+
 
             // Make POST request to Cloudinary
             const response = await axios.post(CLOUDINARY_URL, formData, {
@@ -175,13 +164,10 @@ const TweetPostScreen = () => {
                     if (progressEvent.total) {
                         const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                         setUploadProgress(progress);
-                        console.log(`Upload progress: ${progress}%`);
+
                     }
                 },
             });
-
-            // Log successful response
-            console.log('Cloudinary upload successful:', response.data);
 
             // Return URL and public_id
             return {
@@ -193,10 +179,7 @@ const TweetPostScreen = () => {
             console.error('Cloudinary upload failed:', error);
 
             if (axios.isAxiosError(error)) {
-                console.error('Status:', error.response?.status);
-                console.error('Response data:', error.response?.data);
-                console.error('Response headers:', error.response?.headers);
-
+                console.error('Axios error:', error.response?.data);
                 throw new Error(
                     `Upload failed (${error.response?.status}): ${error.response?.data?.error?.message || 'Unknown error'
                     }`
@@ -232,10 +215,9 @@ const TweetPostScreen = () => {
         } as any);
 
         try {
-            console.log('Starting Cloudinary upload with fetch...');
 
             // Make POST request using fetch
-            const response = await fetch(CLOUDINARY_URL, {
+            const response = await axios.post(CLOUDINARY_URL, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -244,15 +226,12 @@ const TweetPostScreen = () => {
             });
 
             // Check if response is ok
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+            if (response.status < 200 || response.status >= 300) {
+                throw new Error(`Upload failed: ${response.status} - ${response.statusText}`);
             }
 
             // Parse response
-            const data = await response.json();
-            console.log('Upload successful:', data);
-
+            const data = response.data;
             // Return URL and public_id
             return {
                 url: data.secure_url,
@@ -301,7 +280,6 @@ const TweetPostScreen = () => {
             // Upload image if not already uploaded
             if (coverImage && !cloudinaryImageData) {
                 try {
-                    console.log('Uploading image to Cloudinary...');
                     // Try axios upload first
                     try {
                         imageData = await uploadImageToCloudinary(coverImage);
@@ -312,7 +290,7 @@ const TweetPostScreen = () => {
                     }
 
                     setCloudinaryImageData(imageData);
-                    console.log('Image uploaded successfully:', imageData);
+
                 } catch (uploadError) {
                     console.error('Image upload error:', uploadError);
                     setError(uploadError instanceof Error ? uploadError.message : 'Image upload failed');
@@ -325,12 +303,10 @@ const TweetPostScreen = () => {
             const tweetData = {
                 content,
                 toptitle: topTitle,
+                tags,
                 isAnonymous,
                 coverImageURL: imageData?.url || '',
             };
-
-            console.log('Posting tweet data:', tweetData);
-            console.log('API URL:', `${API_URL}tweets/uploadblog`);
 
             // Send post request to backend
             const response = await axios.post(`${API_URL}tweets/uploadblog`, tweetData, {
@@ -341,7 +317,6 @@ const TweetPostScreen = () => {
                 timeout: 10000, // 10 second timeout
             });
 
-            console.log('Post creation response:', response.data);
 
             // Show success message and redirect
             Alert.alert(
@@ -371,6 +346,12 @@ const TweetPostScreen = () => {
         } finally {
             setLoading(false);
             setUploadProgress(0);
+            setContent('');
+            setTopTitle('');
+            setCoverImage(null);
+            setCloudinaryImageData(null);
+            setIsAnonymous(false);
+            setError('');
         }
     };
 
@@ -406,6 +387,16 @@ const TweetPostScreen = () => {
                 value={topTitle}
                 onChangeText={setTopTitle}
             />
+
+            {/* Tags Input */}
+            <TextInput
+                style={styles.input}
+                placeholder="Tags (comma separated)"
+                placeholderTextColor="#666"
+                value={tags}
+                onChangeText={setTags}
+            />
+
 
             {/* Content Input */}
             <TextInput
@@ -502,7 +493,7 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     contentContainer: {
-        paddingBottom: 100,
+        paddingBottom: 650,
     },
     title: {
         fontSize: 24,
@@ -561,7 +552,7 @@ const styles = StyleSheet.create({
     },
     imagePreview: {
         width: '100%',
-        height: 200,
+        height: "100%",
         borderRadius: 10,
     },
     removeImageButton: {

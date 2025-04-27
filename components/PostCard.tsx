@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -6,16 +6,14 @@ import {
     TouchableOpacity,
     StyleSheet,
     Dimensions,
-    ImageSourcePropType,
-    useColorScheme
+    ActivityIndicator,
+    useColorScheme,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
-    HeartIcon, BookmarkIcon,
-    CrossIcon, CommentIcon,
-    BookmarkIconInfo,
+    CommentIcon,
     CustomShare,
-} from "@/assets/icons/iconsheader"
+} from "@/assets/icons/iconsheader";
 
 interface BlogCardProps {
     userImage?: string;
@@ -30,11 +28,6 @@ interface BlogCardProps {
 
 const { width } = Dimensions.get('window');
 
-const onLikePress = () => { }
-const onCommentPress = () => { }
-const onSharePress = () => { }
-const onMenuPress = () => { }
-
 const BlogCard: React.FC<BlogCardProps> = ({
     userImage,
     userName,
@@ -47,6 +40,9 @@ const BlogCard: React.FC<BlogCardProps> = ({
 }) => {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
+
+    const [imageAspectRatio, setImageAspectRatio] = useState<number>(1);
+    const [imageLoading, setImageLoading] = useState<boolean>(true);
 
     // Theme colors
     const themeStyles = {
@@ -66,7 +62,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
             backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
         },
         iconColor: isDark ? '#FFF' : '#000',
-        activeIconColor: isDark ? '#FF5252' : '#FF5252',
+        activeIconColor: '#FF5252',
         shadow: isDark ? {
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
@@ -82,9 +78,21 @@ const BlogCard: React.FC<BlogCardProps> = ({
         }
     };
 
+    useEffect(() => {
+        if (postImage) {
+            Image.getSize(postImage, (width, height) => {
+                if (width && height) {
+                    setImageAspectRatio(width / height);
+                }
+            }, (error) => {
+                console.error('Failed to get image size', error);
+            });
+        }
+    }, [postImage]);
+
     return (
         <View style={[styles.container, themeStyles.container, themeStyles.shadow]}>
-            {/* Header with user info and menu */}
+            {/* Header */}
             <View style={styles.header}>
                 <View style={styles.userInfo}>
                     {userImage && (
@@ -95,30 +103,42 @@ const BlogCard: React.FC<BlogCardProps> = ({
                         <Text style={[styles.userDesignation, themeStyles.secondaryText]}>{userDesignation}</Text>
                     </View>
                 </View>
-                <TouchableOpacity onPress={onMenuPress} style={[styles.menuButton, themeStyles.menuButton]}>
+                <TouchableOpacity style={[styles.menuButton, themeStyles.menuButton]}>
                     <Ionicons name="ellipsis-vertical" size={20} color={themeStyles.iconColor} />
                 </TouchableOpacity>
             </View>
 
-            {/* Divider line */}
+            {/* Divider */}
             <View style={[styles.divider, themeStyles.divider]} />
 
-            {/* Post image with aspect ratio maintained */}
-            {
-                postImage && <Image
-                    source={{ uri: postImage }}
-                    style={styles.postImage}
-                    resizeMode="cover"
-                />
-            }
-            {
-                !postImage && <Text style={[styles.caption, themeStyles.text]}>{caption}</Text>
-            }
-            {/* Action buttons */}
+            {/* Post Image or Text */}
+            {postImage ? (
+                <View style={styles.imageContainer}>
+                    {imageLoading && (
+                        <View style={styles.loader}>
+                            <ActivityIndicator size="small" color="#FFB700" />
+                        </View>
+                    )}
+                    <Image
+                        source={{ uri: postImage }}
+                        style={{
+                            width: '100%',
+                            aspectRatio: imageAspectRatio,
+                            borderRadius: 8,
+                        }}
+                        resizeMode="cover"
+                        onLoadStart={() => setImageLoading(true)}
+                        onLoadEnd={() => setImageLoading(false)}
+                    />
+                </View>
+            ) : (
+                <Text style={[styles.caption, themeStyles.text]}>{caption}</Text>
+            )}
+
+            {/* Action Buttons */}
             <View style={styles.actionsContainer}>
                 <View style={styles.leftActions}>
-                    <TouchableOpacity onPress={onLikePress} style={styles.actionButton}>
-
+                    <TouchableOpacity style={styles.actionButton}>
                         <Ionicons
                             name={isLiked ? "heart" : "heart-outline"}
                             size={24}
@@ -127,24 +147,21 @@ const BlogCard: React.FC<BlogCardProps> = ({
                         <Text style={[styles.actionText, themeStyles.text]}>{likesCount}</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={onCommentPress} style={styles.actionButton}>
-                        <CommentIcon
-                            color={themeStyles.iconColor}
-                        />
+                    <TouchableOpacity style={styles.actionButton}>
+                        <CommentIcon color={themeStyles.iconColor} />
                         <Text style={[styles.actionText, themeStyles.text]}>{commentsCount}</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={onSharePress} style={styles.actionButton}>
-                        <CustomShare
-                            size={19}
-                            color={themeStyles.iconColor}
-                        />
+                    <TouchableOpacity style={styles.actionButton}>
+                        <CustomShare size={19} color={themeStyles.iconColor} />
                     </TouchableOpacity>
                 </View>
             </View>
-            {
-                postImage && <Text style={[styles.caption, themeStyles.text]}>{caption}</Text>
-            }
+
+            {/* Caption Text after image */}
+            {postImage && (
+                <Text style={[styles.caption, themeStyles.text]}>{caption}</Text>
+            )}
         </View>
     );
 };
@@ -193,10 +210,18 @@ const styles = StyleSheet.create({
         height: 1,
         marginHorizontal: 12,
     },
-    postImage: {
+    imageContainer: {
         width: '100%',
-        height: width * 0.8, // Maintain aspect ratio (4:5)
         marginTop: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    loader: {
+        position: 'absolute',
+        top: '50%',
+        alignSelf: 'center',
+        zIndex: 1,
     },
     caption: {
         paddingHorizontal: 12,
