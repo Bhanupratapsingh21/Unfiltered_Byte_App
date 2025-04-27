@@ -1,228 +1,638 @@
-import React from "react";
-import { View, Pressable, Text, Image, ScrollView, KeyboardAvoidingView, Platform, StyleSheet, Dimensions } from "react-native";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import { router } from "expo-router";
-import Card from "@/components/Infotab/AngerCard";
-import Humanicon from "@/assets/icons/humanicon";
-import { NormalIcon, HappyIcon, AngerIcon, SadIcon } from '@/assets/icons/emotionemojis';
-import CardData from "@/types/Carddata.types";
+import React, { useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    Image,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    Switch,
+    Platform,
+} from 'react-native';
+import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
+import * as ImagePicker from 'expo-image-picker';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import { useRouter } from 'expo-router';
+import * as Progress from 'react-native-progress';
+import { User } from '@/types/auth.types';
 
-const cardsData: CardData[] = [
-    {
-        id: '906',
-        icon: <HappyIcon height={32} />,
-        bgColor: "#1F1F1F",
-        type: "Calm",
-        iconBgColor: "#FFB700",
-        issueText: "Want More Joy?",
-        description: "Build joy through gratitude and purpose.",
-    },
-    {
-        id: '901',
-        icon: <AngerIcon height={32} />,
-        bgColor: "#1F1F1F",
-        type: "Anger",
-        iconBgColor: "#FF4A4A",
-        issueText: "Feeling Angry?",
-        description: "Learn how to use anger constructively.",
-    },
-    {
-        id: '903',
-        icon: <NormalIcon height={32} />,
-        bgColor: "#1F1F1F",
-        type: "Blame",
-        iconBgColor: "#FF7F50",
-        issueText: "Caught in Blame?",
-        description: "Shift blame into personal power.",
-    },
-    {
-        id: '904',
-        icon: <SadIcon height={32} />,
-        bgColor: "#1F1F1F",
-        type: "Sorrow",
-        iconBgColor: "#6789FF",
-        issueText: "Feeling Low?",
-        description: "Explore how sorrow leads to healing.",
-    },
-    {
-        id: '905',
-        icon: <Humanicon height={32} />,
-        bgColor: "#1F1F1F",
-        type: "Confusion",
-        iconBgColor: "#00C6AE",
-        issueText: "Mentally Foggy?",
-        description: "Turn confusion into clarity.",
-    },
-    {
-        id: '906',
-        icon: <HappyIcon height={32} />,
-        bgColor: "#1F1F1F",
-        type: "Happiness",
-        iconBgColor: "#FFB700",
-        issueText: "Want More Happiness?",
-        description: "Build happiness through gratitude and purpose.",
-    }
-];
-
-export default function Indexscreen() {
-    const chunkArray = (array: CardData[], chunkSize: number) => {
-        const result = [];
-        for (let i = 0; i < array.length; i += chunkSize) {
-            result.push(array.slice(i, i + chunkSize));
-        }
-        return result;
-    };
-
-    const cardRows = chunkArray(cardsData, 2);
-
-    return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1, backgroundColor: "#0F0F0F" }}
-        >
-            {/* Header */}
-            <View style={styles.header}>
-                <Pressable onPress={() => router.back()} style={styles.backButton}>
-                    <AntDesign name="arrowleft" size={24} color="#FFFFFF" />
-                </Pressable>
-                <Text style={styles.title}>Information</Text>
-                <View style={styles.backButton2} />
-            </View>
-
-            <ScrollView
-                contentContainerStyle={styles.scrollContainer}
-                showsVerticalScrollIndicator={false}
-            >
-                {/* Circle / Brain */}
-                <View style={styles.circleContainer}>
-                    <View style={styles.circleOuter}>
-                        <View style={styles.circleMiddle} />
-                        <View style={styles.circleInner} />
-                        <View style={styles.imageContainer}>
-                            <Image
-                                source={require("@/assets/images/brain.png")}
-                                style={styles.brainImage}
-                            />
-                        </View>
-                    </View>
-                </View>
-
-                {/* Cards Grid */}
-                <View style={styles.cardsGrid}>
-                    {cardRows.map((row, rowIndex) => (
-                        <View key={`row-${rowIndex}`} style={styles.cardRow}>
-                            {row.map(card => (
-                                <Card
-                                    type={card.type}
-                                    key={card.id}
-                                    icon={card.icon}
-                                    bgColor={card.bgColor}
-                                    iconBgColor={card.iconBgColor}
-                                    issueText={card.issueText}
-                                    description={card.description}
-                                />
-                            ))}
-                            {row.length < 2 && <View style={styles.emptyCard} />}
-                        </View>
-                    ))}
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
-    );
+// Define interfaces
+interface ImagePickerAsset {
+    uri: string;
+    type?: string;
+    name?: string;
+    width?: number;
+    height?: number;
+    fileSize?: number;
 }
 
-const { width } = Dimensions.get('window');
-const CARD_MARGIN = 12;
-const CARD_WIDTH = (width - (CARD_MARGIN * 3)) / 2;
+interface CloudinaryResponse {
+    url: string;
+    public_id: string;
+}
+
+// Constants
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dxae5w6hn/image/upload";
+const UPLOAD_PRESET = "emotions";
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || "http://192.168.1.9:4000";
+
+const TweetPostScreen = () => {
+    // State variables
+    const router = useRouter();
+    const [content, setContent] = useState('');
+    const [topTitle, setTopTitle] = useState('');
+    const [isAnonymous, setIsAnonymous] = useState(false);
+    const [coverImage, setCoverImage] = useState<ImagePickerAsset | null>(null);
+    const [cloudinaryImageData, setCloudinaryImageData] = useState<CloudinaryResponse | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [error, setError] = useState('');
+    const [networkStatus, setNetworkStatus] = useState<'unknown' | 'connected' | 'disconnected'>('unknown');
+    const user = useAuthStore((state) => state.user) as User | null;
+
+    // Check permissions on component mount
+    useEffect(() => {
+        (async () => {
+            if (Platform.OS !== 'web') {
+                const { status: galleryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+
+                if (galleryStatus !== 'granted' || cameraStatus !== 'granted') {
+                    Alert.alert(
+                        'Permissions Required',
+                        'Please grant camera and photo library permissions to use this feature.',
+                        [{ text: 'OK' }]
+                    );
+                }
+            }
+
+            // Simple network check
+            try {
+                await fetch('https://www.cloudinary.com', { method: 'HEAD' });
+                setNetworkStatus('connected');
+            } catch (error) {
+                setNetworkStatus('disconnected');
+                console.log('Network check failed:', error);
+            }
+        })();
+    }, []);
+
+    // Function to pick an image
+    const pickImage = async (source: 'camera' | 'gallery') => {
+        if (networkStatus === 'disconnected') {
+            Alert.alert('Network Error', 'Please check your internet connection');
+            return;
+        }
+
+        let result: ImagePicker.ImagePickerResult;
+        try {
+            if (source === 'camera') {
+                result = await ImagePicker.launchCameraAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    aspect: [4, 3],
+                    quality: 0.7,
+                });
+            } else {
+                result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    aspect: [4, 3],
+                    quality: 0.7,
+                });
+            }
+
+            if (!result.canceled && result.assets && result.assets[0]) {
+                // Check file size
+                const fileInfo = await FileSystem.getInfoAsync(result.assets[0].uri);
+                if (fileInfo.exists && fileInfo.size && fileInfo.size > MAX_FILE_SIZE) {
+                    Alert.alert('File Too Large', 'Please select an image under 10MB');
+                    return;
+                }
+
+                setCoverImage(result.assets[0]);
+                setCloudinaryImageData(null); // Reset uploaded image if new selected
+                setError(''); // Clear any previous errors
+                console.log("Selected image:", result.assets[0]);
+            }
+        } catch (err) {
+            console.error('Error picking image:', err);
+            setError('Failed to select image');
+        }
+    };
+
+    // Function to upload image to Cloudinary
+    const uploadImageToCloudinary = async (image: ImagePickerAsset): Promise<CloudinaryResponse> => {
+        if (!image || !image.uri) {
+            throw new Error('No image selected');
+        }
+
+        setUploadProgress(0);
+
+        // Create form data
+        const formData = new FormData();
+        formData.append('upload_preset', UPLOAD_PRESET);
+
+        // Get file extension and name
+        const uriParts = image.uri.split('.');
+        const fileExtension = uriParts[uriParts.length - 1];
+        const fileName = `upload_${Date.now()}.${fileExtension}`;
+
+        // For debugging
+        console.log('Uploading image:', {
+            uri: image.uri,
+            type: `image/${fileExtension}`,
+            name: fileName
+        });
+
+        // Append file to form with proper format for React Native
+        formData.append('file', {
+            uri: image.uri,
+            type: `image/${fileExtension}`,
+            name: fileName,
+        } as any);
+
+        try {
+            // Log beginning of upload
+            console.log('Starting Cloudinary upload...');
+            console.log('Upload URL:', CLOUDINARY_URL);
+            console.log('Upload preset:', UPLOAD_PRESET);
+
+            // Make POST request to Cloudinary
+            const response = await axios.post(CLOUDINARY_URL, formData, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'multipart/form-data',
+                },
+                transformRequest: (data) => data, // Important for FormData in RN
+                onUploadProgress: (progressEvent) => {
+                    if (progressEvent.total) {
+                        const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                        setUploadProgress(progress);
+                        console.log(`Upload progress: ${progress}%`);
+                    }
+                },
+            });
+
+            // Log successful response
+            console.log('Cloudinary upload successful:', response.data);
+
+            // Return URL and public_id
+            return {
+                url: response.data.secure_url,
+                public_id: response.data.public_id,
+            };
+        } catch (error) {
+            // Enhanced error logging
+            console.error('Cloudinary upload failed:', error);
+
+            if (axios.isAxiosError(error)) {
+                console.error('Status:', error.response?.status);
+                console.error('Response data:', error.response?.data);
+                console.error('Response headers:', error.response?.headers);
+
+                throw new Error(
+                    `Upload failed (${error.response?.status}): ${error.response?.data?.error?.message || 'Unknown error'
+                    }`
+                );
+            }
+
+            throw error;
+        }
+    };
+
+    // Alternative upload using fetch API
+    const uploadWithFetch = async (image: ImagePickerAsset): Promise<CloudinaryResponse> => {
+        if (!image || !image.uri) {
+            throw new Error('No image selected');
+        }
+
+        setUploadProgress(0);
+
+        // Create form data
+        const formData = new FormData();
+        formData.append('upload_preset', UPLOAD_PRESET);
+
+        // Get file extension and name
+        const uriParts = image.uri.split('.');
+        const fileExtension = uriParts[uriParts.length - 1];
+        const fileName = `upload_${Date.now()}.${fileExtension}`;
+
+        // Append file to form
+        formData.append('file', {
+            uri: image.uri,
+            type: `image/${fileExtension}`,
+            name: fileName,
+        } as any);
+
+        try {
+            console.log('Starting Cloudinary upload with fetch...');
+
+            // Make POST request using fetch
+            const response = await fetch(CLOUDINARY_URL, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                },
+            });
+
+            // Check if response is ok
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+            }
+
+            // Parse response
+            const data = await response.json();
+            console.log('Upload successful:', data);
+
+            // Return URL and public_id
+            return {
+                url: data.secure_url,
+                public_id: data.public_id,
+            };
+        } catch (error) {
+            console.error('Upload with fetch failed:', error);
+            throw error;
+        }
+    };
+
+    // Function to remove selected image
+    const removeImage = () => {
+        setCoverImage(null);
+        setCloudinaryImageData(null);
+        setError('');
+    };
+
+    // Function to handle post creation
+    const handlePostTweet = async () => {
+        // Validate input
+        if (!content.trim()) {
+            setError('Content is required');
+            return;
+        }
+
+        if (!user) {
+            setError('User not authenticated');
+            return;
+        }
+
+        // Check network status
+        if (networkStatus === 'disconnected') {
+            Alert.alert('Network Error', 'Please check your internet connection');
+            return;
+        }
+
+        // Set loading state
+        setLoading(true);
+        setError('');
+        setUploadProgress(0);
+
+        try {
+            let imageData = cloudinaryImageData;
+
+            // Upload image if not already uploaded
+            if (coverImage && !cloudinaryImageData) {
+                try {
+                    console.log('Uploading image to Cloudinary...');
+                    // Try axios upload first
+                    try {
+                        imageData = await uploadImageToCloudinary(coverImage);
+                    } catch (axiosError) {
+                        console.log('Axios upload failed, trying fetch...');
+                        // Fallback to fetch if axios fails
+                        imageData = await uploadWithFetch(coverImage);
+                    }
+
+                    setCloudinaryImageData(imageData);
+                    console.log('Image uploaded successfully:', imageData);
+                } catch (uploadError) {
+                    console.error('Image upload error:', uploadError);
+                    setError(uploadError instanceof Error ? uploadError.message : 'Image upload failed');
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            // Prepare tweet data
+            const tweetData = {
+                content,
+                toptitle: topTitle,
+                isAnonymous,
+                coverImageURL: imageData?.url || '',
+            };
+
+            console.log('Posting tweet data:', tweetData);
+            console.log('API URL:', `${API_URL}tweets/uploadblog`);
+
+            // Send post request to backend
+            const response = await axios.post(`${API_URL}tweets/uploadblog`, tweetData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user.jwt}`,
+                },
+                timeout: 10000, // 10 second timeout
+            });
+
+            console.log('Post creation response:', response.data);
+
+            // Show success message and redirect
+            Alert.alert(
+                'Success',
+                'Post created successfully!',
+                [{ text: 'OK', onPress: () => router.push('/') }]
+            );
+        } catch (err) {
+            console.error('Error posting tweet:', err);
+
+            if (axios.isAxiosError(err)) {
+                console.error('Status:', err.response?.status);
+                console.error('Data:', err.response?.data);
+
+                if (err.code === 'ECONNABORTED') {
+                    setError('Request timed out. Please try again.');
+                } else if (!err.response) {
+                    setError('Network error. Please check your connection.');
+                } else {
+                    setError(err.response?.data?.message || 'Failed to post tweet');
+                }
+            } else if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('An unknown error occurred');
+            }
+        } finally {
+            setLoading(false);
+            setUploadProgress(0);
+        }
+    };
+
+    return (
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+            {/* Network Status Indicator */}
+            {networkStatus === 'disconnected' && (
+                <View style={styles.networkWarning}>
+                    <Text style={styles.networkWarningText}>
+                        ⚠️ No internet connection. Please check your network settings.
+                    </Text>
+                </View>
+            )}
+
+            <Text style={styles.title}>Create New Post</Text>
+
+            {/* Anonymous Toggle */}
+            <View style={styles.anonymousContainer}>
+                <Text style={styles.anonymousText}>Post Anonymously</Text>
+                <Switch
+                    trackColor={{ false: '#767577', true: '#FFB700' }}
+                    thumbColor={isAnonymous ? '#f4f3f4' : '#f4f3f4'}
+                    onValueChange={() => setIsAnonymous(!isAnonymous)}
+                    value={isAnonymous}
+                />
+            </View>
+
+            {/* Top Title Input */}
+            <TextInput
+                style={styles.input}
+                placeholder="Your Mood, Location or event"
+                placeholderTextColor="#666"
+                value={topTitle}
+                onChangeText={setTopTitle}
+            />
+
+            {/* Content Input */}
+            <TextInput
+                style={[styles.input, styles.contentInput]}
+                placeholder="What's on your mind? Caption..."
+                placeholderTextColor="#666"
+                multiline
+                numberOfLines={4}
+                value={content}
+                onChangeText={setContent}
+            />
+
+            {/* Image Preview */}
+            {coverImage && (
+                <View style={styles.imagePreviewContainer}>
+                    <Image source={{ uri: coverImage.uri }} style={styles.imagePreview} />
+                    <TouchableOpacity style={styles.removeImageButton} onPress={removeImage}>
+                        <MaterialIcons name="close" size={24} color="white" />
+                    </TouchableOpacity>
+
+                    {/* Show Cloudinary status */}
+                    {cloudinaryImageData && (
+                        <View style={styles.cloudinaryBadge}>
+                            <Text style={styles.cloudinaryText}>✓ Uploaded to Cloud</Text>
+                        </View>
+                    )}
+                </View>
+            )}
+
+            {/* Image Picker Buttons */}
+            <View style={styles.imagePickerContainer}>
+                <TouchableOpacity
+                    style={styles.imageButton}
+                    onPress={() => pickImage('camera')}
+                    disabled={loading}
+                >
+                    <Ionicons name="camera" size={24} color="#FFB700" />
+                    <Text style={styles.imageButtonText}>Camera</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.imageButton}
+                    onPress={() => pickImage('gallery')}
+                    disabled={loading}
+                >
+                    <Ionicons name="image" size={24} color="#FFB700" />
+                    <Text style={styles.imageButtonText}>Gallery</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Upload Progress */}
+            {uploadProgress > 0 && uploadProgress < 100 && (
+                <View style={styles.progressContainer}>
+                    <Progress.Bar
+                        progress={uploadProgress / 100}
+                        width={null}
+                        color="#FFB700"
+                        borderRadius={5}
+                        height={10}
+                    />
+                    <Text style={styles.progressText}>{uploadProgress}%</Text>
+                </View>
+            )}
+
+            {/* Error Message */}
+            {error ? (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>
+            ) : null}
+
+            {/* Submit Button */}
+            <TouchableOpacity
+                style={[
+                    styles.postButton,
+                    (loading || networkStatus === 'disconnected') && styles.disabledButton
+                ]}
+                onPress={handlePostTweet}
+                disabled={loading || networkStatus === 'disconnected'}
+            >
+                {loading ? (
+                    <ActivityIndicator color="#0F0F0F" size="small" />
+                ) : (
+                    <Text style={styles.postButtonText}>Post</Text>
+                )}
+            </TouchableOpacity>
+        </ScrollView>
+    );
+};
 
 const styles = StyleSheet.create({
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'ios' ? 50 : 20,
-        paddingBottom: 10,
+    container: {
+        flex: 1,
         backgroundColor: '#0F0F0F',
+        padding: 16,
+    },
+    contentContainer: {
+        paddingBottom: 100,
     },
     title: {
-        fontSize: 20,
-        fontWeight: '800',
+        fontSize: 24,
+        fontWeight: 'bold',
         color: '#FFFFFF',
-        flex: 1,
+        marginBottom: 20,
         textAlign: 'center',
     },
-    backButton: {
-        backgroundColor: '#292929',
-        padding: 8,
-        borderRadius: 8,
-        width: 40,
-        height: 40,
+    anonymousContainer: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+        padding: 12,
+        backgroundColor: '#1C1C1E',
+        borderRadius: 10,
     },
-    backButton2: {
-        width: 40,
-        height: 40,
+    anonymousText: {
+        color: '#FFFFFF',
+        fontSize: 16,
     },
-    scrollContainer: {
-        paddingTop: 20,
-        paddingBottom: 70,
-        paddingHorizontal: CARD_MARGIN,
+    input: {
+        backgroundColor: '#1C1C1E',
+        color: '#FFFFFF',
+        borderRadius: 10,
+        padding: 15,
+        marginBottom: 15,
+        fontSize: 16,
     },
-    circleContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
+    contentInput: {
+        minHeight: 120,
+        textAlignVertical: 'top',
+    },
+    imagePickerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
         marginBottom: 20,
     },
-    circleOuter: {
-        position: 'relative',
-        width: 240,
-        height: 240,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    circleMiddle: {
-        position: 'absolute',
-        width: 200,
-        height: 200,
-        borderRadius: 100,
-        borderWidth: 1,
-        borderColor: '#292929',
-    },
-    circleInner: {
-        position: 'absolute',
-        width: 160,
-        height: 160,
-        borderRadius: 80,
-        borderWidth: 1,
-        borderColor: '#444',
-    },
-    imageContainer: {
-        width: 140,
-        height: 140,
-        borderRadius: 70,
-        borderWidth: 1,
-        borderColor: '#555',
-        overflow: 'hidden',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#1F1F1F',
-    },
-    brainImage: {
-        width: '90%',
-        height: '90%',
-        resizeMode: 'contain',
-    },
-    cardsGrid: {
-        flexDirection: 'column',
-    },
-    cardRow: {
+    imageButton: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: CARD_MARGIN,
+        alignItems: 'center',
+        backgroundColor: '#1C1C1E',
+        padding: 12,
+        borderRadius: 10,
+        width: '45%',
+        justifyContent: 'center',
     },
-    emptyCard: {
-        width: CARD_WIDTH,
+    imageButtonText: {
+        color: '#FFB700',
+        marginLeft: 8,
+        fontSize: 16,
+    },
+    imagePreviewContainer: {
+        position: 'relative',
+        marginBottom: 15,
+    },
+    imagePreview: {
+        width: '100%',
+        height: 200,
+        borderRadius: 10,
+    },
+    removeImageButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cloudinaryBadge: {
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        borderRadius: 15,
+        padding: 8,
+    },
+    cloudinaryText: {
+        color: '#4CAF50',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    postButton: {
+        backgroundColor: '#FFB700',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    disabledButton: {
+        backgroundColor: '#6e5200',
+        opacity: 0.7,
+    },
+    postButtonText: {
+        color: '#0F0F0F',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    errorContainer: {
+        backgroundColor: 'rgba(255, 59, 48, 0.2)',
+        padding: 10,
+        borderRadius: 8,
+        marginBottom: 15,
+    },
+    errorText: {
+        color: '#FF3B30',
+        textAlign: 'center',
+    },
+    progressContainer: {
+        marginVertical: 15,
+        width: '100%',
+    },
+    progressText: {
+        color: '#FFFFFF',
+        textAlign: 'center',
+        marginTop: 5,
+    },
+    networkWarning: {
+        backgroundColor: 'rgba(255, 183, 0, 0.2)',
+        padding: 10,
+        borderRadius: 8,
+        marginBottom: 15,
+    },
+    networkWarningText: {
+        color: '#FFB700',
+        textAlign: 'center',
     },
 });
+
+export default TweetPostScreen;

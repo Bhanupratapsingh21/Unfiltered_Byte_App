@@ -52,9 +52,11 @@ export const useAuthStore = create<AuthState>()(
 
                     // ✅ Session is valid
                     const user = await account.get();
-
+                    const jwtData = await account.createJWT(); // ✅ JWT ADDED HERE
                     const formattedUser = {
+
                         ...user,
+                        jwt: jwtData.jwt,
                         createdAt: user.$createdAt ?? new Date().toISOString(),
                     };
 
@@ -125,9 +127,17 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     // Any Appwrite call will automatically refresh the session
                     const user = await account.get();
-                    await SecureStore.setItemAsync('user', JSON.stringify(user));
+                    const jwtData = await account.createJWT(); // ✅ JWT ADDED HERE
+                    const formattedUser = {
+                        ...user,
+                        jwt: jwtData.jwt, // ✅ JWT ADDED HERE
+                        createdAt: user.$createdAt || new Date().toISOString(),
+                        emailVerification: user.emailVerification || false,
+                        phoneVerification: user.phoneVerification || false
+                    };
+                    await SecureStore.setItemAsync('user', JSON.stringify(formattedUser));
                     set({
-                        user: { ...user, createdAt: user.$createdAt },
+                        user: { ...user, createdAt: user.$createdAt, jwt: jwtData.jwt },
                         lastActivity: Date.now()
                     });
                     return true;

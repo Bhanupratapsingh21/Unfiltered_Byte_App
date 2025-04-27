@@ -25,16 +25,15 @@ interface BlogCardProps {
     caption: string;
     likesCount: number;
     commentsCount: number;
-    onMenuPress?: () => void;
-    onLikePress?: () => void;
-    onCommentPress?: () => void;
-    onSharePress?: () => void;
-    onSavePress?: () => void;
     isLiked?: boolean;
-    isSaved?: boolean;
 }
 
 const { width } = Dimensions.get('window');
+
+const onLikePress = () => { }
+const onCommentPress = () => { }
+const onSharePress = () => { }
+const onMenuPress = () => { }
 
 const BlogCard: React.FC<BlogCardProps> = ({
     userImage,
@@ -44,13 +43,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
     caption,
     likesCount,
     commentsCount,
-    onMenuPress,
-    onLikePress,
-    onCommentPress,
-    onSharePress,
-    onSavePress,
     isLiked = false,
-    isSaved = false,
 }) => {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
@@ -148,15 +141,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
                         />
                     </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity onPress={onSavePress}>
-                    <BookmarkIconInfo
-                        color={isSaved ? "#0000FF" : "#fff"}
-                        size={20}
-                    />
-                </TouchableOpacity>
             </View>
-
             {
                 postImage && <Text style={[styles.caption, themeStyles.text]}>{caption}</Text>
             }

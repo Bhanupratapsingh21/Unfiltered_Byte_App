@@ -1,15 +1,14 @@
 import React, { useRef } from "react";
 import {
   View,
-  Pressable,
   Text,
   Image,
   StyleSheet,
   Dimensions,
   Animated,
-  ScrollView,
   Platform,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
 import NotificationIcon from "@/assets/icons/Bellicon";
@@ -18,6 +17,7 @@ import StreakCard from "@/components/Home/StreakCard";
 import BlogCard from "@/components/PostCard";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
+import Posts from "@/components/Services Componet/Posts";
 
 const { width, height } = Dimensions.get("window");
 
@@ -26,7 +26,6 @@ const TAGS = ["#SRHvsMI", "#Pakistan", "#RohitSharma", "#MI", "#Umpire", "#SAARC
 export default function IndexScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const streakTranslate = scrollY.interpolate({
@@ -80,74 +79,55 @@ export default function IndexScreen() {
         </View>
       </BlurView>
 
-      {/* Scrollable Content */}
-      <Animated.ScrollView
-        contentContainerStyle={styles.scrollContent}
+      {/* FlatList handles entire scroll */}
+      <FlatList
+        data={[]} // Dummy data because we just use ListHeaderComponent
+        keyExtractor={() => "header"}
+        ListHeaderComponent={
+          <>
+            {/* Animated StreakCard */}
+            <Animated.View
+              style={{
+                transform: [{ translateY: streakTranslate }],
+                opacity: streakOpacity,
+                paddingHorizontal: 16,
+                paddingTop: Platform.OS === "ios" ? 100 : 120,
+                paddingBottom: 0,
+              }}
+            >
+              <StreakCard />
+            </Animated.View>
+
+            {/* Trending Tags */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Trending In India</Text>
+            </View>
+
+            <FlatList
+              data={TAGS}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.tagContainer}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <View style={styles.tag}>
+                  <Text style={styles.tagText}>{item}</Text>
+                </View>
+              )}
+            />
+
+            {/* Posts */}
+            <Posts />
+          </>
+        }
+        renderItem={null}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
         )}
-      >
-        {/* Animated Streak Card */}
-        <Animated.View
-          style={{
-            transform: [{ translateY: streakTranslate }],
-            opacity: streakOpacity,
-            paddingHorizontal: 16,
-            paddingTop: 60,
-            paddingBottom: 0,
-          }}
-        >
-          <StreakCard />
-        </Animated.View>
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Tranding In India</Text>
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tagContainer}
-        >
-          {TAGS.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* Posts */}
-        <View style={{ paddingHorizontal: 16, paddingBottom: 150 }}>
-          {[...Array(3)].map((_, i) => (
-            <BlogCard
-              key={i}
-              userImage="https://res.cloudinary.com/dxae5w6hn/image/upload/v1744973037/yskwzkzfhth1kqokeu9q.png"
-              userName={i % 2 === 0 ? "Son of John Doe" : "John Doe"}
-              userDesignation={i % 2 === 0 ? "Tech lead" : "UI Designer"}
-              caption={
-                i === 0
-                  ? "Twitter’s Community Notes is probably the best fact checking system that I’ve come across."
-                  : i === 1
-                    ? "This is a beautiful sunset view from my recent trip to the mountains."
-                    : "Your work is going to fill a large part of your life — Steve Jobs"
-              }
-              postImage={i === 1 ? "https://res.cloudinary.com/dxae5w6hn/image/upload/v1744973313/gpqrdgxxvw5canwyvjts.png" : undefined}
-              likesCount={i * 10 + 3}
-              commentsCount={i * 2 + 1}
-              isLiked={true}
-              isSaved={false}
-              onMenuPress={() => { }}
-              onLikePress={() => { }}
-              onCommentPress={() => { }}
-              onSharePress={() => { }}
-              onSavePress={() => { }}
-            />
-          ))}
-        </View>
-      </Animated.ScrollView>
+      />
     </View>
   );
 }

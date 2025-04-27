@@ -5,6 +5,7 @@ export interface User {
     name: string;
     email: string;
     phone?: string;
+    jwt: string | null; // JWT token for authentication
     emailVerification: boolean;
     phoneVerification: boolean;
     preferences?: Record<string, any>;

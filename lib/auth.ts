@@ -9,7 +9,7 @@ import { User } from '@/types/auth.types';
 WebBrowser.maybeCompleteAuthSession();
 
 export const useGoogleAuth = () => {
-    const [request, response, promptAsync] = Google.useAuthRequest({
+    const [request, , promptAsync] = Google.useAuthRequest({
         clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
         scopes: ['openid', 'profile', 'email'],
         redirectUri: makeRedirectUri({
@@ -37,8 +37,11 @@ export const useGoogleAuth = () => {
             );
 
             const user = await account.get();
+            const jwtData = await account.createJWT(); // ✅ JWT ADDED HERE
+
             const formattedUser: User = {
                 ...user,
+                jwt: jwtData.jwt, // ✅ JWT ADDED HERE
                 createdAt: user.$createdAt ?? new Date().toISOString(),
                 emailVerification: user.emailVerification || false,
                 phoneVerification: user.phoneVerification || false
@@ -95,8 +98,11 @@ export const verifyOtp = async (userId: string, secret: string) => {
     try {
         await account.updatePhoneSession(userId, secret);
         const user = await account.get();
+        const jwtData = await account.createJWT(); // ✅ JWT ADDED HERE
+
         const formattedUser: User = {
             ...user,
+            jwt: jwtData.jwt, // ✅ JWT ADDED HERE
             createdAt: user.$createdAt || new Date().toISOString(),
             emailVerification: user.emailVerification || false,
             phoneVerification: user.phoneVerification || false
@@ -131,14 +137,13 @@ export const logout = async () => {
     }
 };
 
-
 export const loginOrSignUpWithEmail = async (
     email: string,
     password: string,
     name: string = 'User'
 ) => {
     const { setUser } = useAuthStore.getState();
-    // Validate email format before making any requests
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return {
@@ -146,18 +151,17 @@ export const loginOrSignUpWithEmail = async (
             error: "Please enter a valid email address",
         };
     }
-    // Validate password requirements
+
     if (password.length < 6) {
         return {
             success: false,
             error: "Password must be at least 6 characters",
         };
     }
+
     try {
-        // First try to login
         await account.createEmailPasswordSession(email, password);
     } catch (loginError: any) {
-        // Handle rate limiting
         if (loginError?.code === 429 || loginError?.message?.includes('Rate limit')) {
             return {
                 success: false,
@@ -165,20 +169,12 @@ export const loginOrSignUpWithEmail = async (
                 isRateLimited: true,
             };
         }
-        // First, try to create a new account if login failed
         try {
-            // Use Appwrite's built-in ID generation instead of react-native-uuid
             const userId = ID.unique();
-
-            // Create the account with Appwrite's ID generator
             await account.create(userId, email, password, name);
-
-            // Add small delay between signup and login to avoid rate limiting
             await new Promise(resolve => setTimeout(resolve, 500));
             await account.createEmailPasswordSession(email, password);
         } catch (signupError: any) {
-            // If signup failed because email exists, it means the original login
-            // failed due to wrong password
             if (signupError?.message?.includes("already exists")) {
                 return {
                     success: false,
@@ -199,15 +195,19 @@ export const loginOrSignUpWithEmail = async (
             };
         }
     }
+
     try {
-        // Success case - get user data
         const user = await account.get();
+        const jwtData = await account.createJWT(); // ✅ JWT ADDED HERE
+
         const formattedUser: User = {
             ...user,
+            jwt: jwtData.jwt, // ✅ JWT ADDED HERE
             createdAt: user.$createdAt ?? new Date().toISOString(),
             emailVerification: user.emailVerification || false,
             phoneVerification: user.phoneVerification || false,
         };
+
         setUser(formattedUser);
         return {
             success: true,
