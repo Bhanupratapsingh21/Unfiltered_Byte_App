@@ -1,76 +1,51 @@
-import React, { useRef } from "react";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet, { BottomSheetFlatList, BottomSheetFooter, BottomSheetFooterContainer } from '@gorhom/bottom-sheet';
+import React, { useMemo, useRef, useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
-  Dimensions,
   Animated,
   Platform,
-  TouchableOpacity,
   FlatList,
+  RefreshControl,
 } from "react-native";
 import { useRouter } from "expo-router";
-import NotificationIcon from "@/assets/icons/Bellicon";
 import { useAuthStore } from "@/store/authStore";
 import StreakCard from "@/components/Home/StreakCard";
 import BlogCard from "@/components/PostCard";
-import { BlurView } from "expo-blur";
-import { Ionicons } from "@expo/vector-icons";
-import Posts from "@/components/Services Componet/Posts";
 import Header from "@/components/Header";
-import { useEffect, useState, useCallback } from "react";
-import { ActivityIndicator, RefreshControl } from "react-native";
-import axios from "axios";
 import Spinner from "@/components/LoadingCircle";
 import Tegs from "@/components/Services Componet/trandingtegs";
+import axios from "axios";
+import Blog from "@/types/Posttypes";
+import { POSTS_API_URL as API_URL } from "@/utils/ApiRoutes";
+import CommentInput from '@/components/CommentsInput';
+import CommentTypes from '@/types/Commentstypes';
+import CommentCard from '@/components/CommentsCard';
+import fetchComments from '@/utils/getcomments';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + "tweets/getblogsadv?q=newestfirst";
-
-interface Blog {
-  _id: string;
-  content: string;
-  coverImageURL: string;
-  toptitle: string;
-  createdBy: {
-    _id: string;
-    username: string;
-    profileimg: string;
-  };
-  commentsCount: number;
-
-  likeCount: number;
-  likedByCurrentUser: boolean;
-  subscribedByCurrentUser: boolean;
-}
-
-
-const TAGS = ["#SRHvsMI", "#Pakistan", "#RohitSharma", "#MI", "#Umpire", "#SAARC"];
-
-export default function IndexScreen() {
-  const router = useRouter();
+const IndexScreen = () => {
+  const sheetRef = useRef<BottomSheet>(null);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const snapPoints = useMemo(() => ["20%", "40%", "80%"], ["20%", "40%", "80%"]);
 
-  const streakTranslate = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, -60],
-    extrapolate: "clamp",
-  });
+  // AuthStore
+  const { user } = useAuthStore(); // jwt token
 
-  const streakOpacity = scrollY.interpolate({
-    inputRange: [0, 50],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
+  // Comments State
+  const [comments, setComments] = useState<CommentTypes[]>([]);
+
+  // Posts State
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const { user } = useAuthStore(); // Assuming user.jwtToken or user.token etc.
-
+  // Fetch Posts
   const fetchBlogs = useCallback(async (refresh = false) => {
     if (loading) return;
     setLoading(true);
@@ -88,7 +63,7 @@ export default function IndexScreen() {
       if (refresh) {
         setBlogs(fetchedBlogs);
       } else {
-        setBlogs(prev => [...prev, ...fetchedBlogs]);
+        setBlogs((prev) => [...prev, ...fetchedBlogs]);
       }
       setPage(newPage);
       setTotalPages(newTotalPages);
@@ -101,180 +76,187 @@ export default function IndexScreen() {
     }
   }, [page, user]);
 
+  // Call Fn on Component Mount or when page changes Load
   useEffect(() => {
-    fetchBlogs(true); // Initial load
+    fetchBlogs(true);
   }, []);
 
+
+  // Posts Controlers
   const handleRefresh = () => {
     setRefreshing(true);
     fetchBlogs(true);
   };
-
   const handleLoadMore = () => {
     if (page < totalPages && !loading) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
-  useEffect(() => {
-    if (page > 1) {
-      fetchBlogs();
-    }
-  }, [page]);
 
-  const renderFooter = () => {
-    if (!loading) return null;
-    return (
-      <View className="flex justify-center items-center gap-2  p-14">
-        <Spinner />
-      </View>
-    );
+  // BottomSheet Controlers
+  const openBottomSheet = (blog: Blog) => {
+    setSelectedBlog(blog);
+    fetchComments(blog._id, setComments);
+    sheetRef.current?.snapToIndex(3);
   };
 
-  if (error) {
-    return (
-      <View style={{ padding: 16, alignItems: "center", justifyContent: "center" }}>
-        <Text style={{ color: "red" }}>{error}</Text>
-        <TouchableOpacity onPress={handleRefresh} style={{ marginTop: 10 }}>
-          <Text style={{ color: "#FFB700" }}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  // Style Animations
+  const streakTranslate = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, -60],
+    extrapolate: "clamp",
+  });
+  const streakOpacity = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
 
   return (
-    <View style={styles.container}>
-      <Header />
-      <FlatList
-        contentContainerStyle={styles.scrollContent}
-        data={blogs}
-        keyExtractor={(item) => item._id}
-        ListHeaderComponent={
-          <>
-            {/* Animated StreakCard */}
-            <Animated.View
-              style={{
-                transform: [{ translateY: streakTranslate }],
-                opacity: streakOpacity,
-                paddingHorizontal: 16, // StreakCard can have its own padding
-                paddingTop: Platform.OS === "ios" ? 100 : 90,
-                paddingBottom: 0,
-              }}
-            >
-              <StreakCard />
-            </Animated.View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <Header />
 
-            {/* Trending Tags */}
-            <Tegs />
+        {
+          loading ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <Spinner />
+            </View>
+          ) : (
+            <FlatList
+              contentContainerStyle={styles.scrollContent}
+              data={blogs}
+              keyExtractor={(item) => item._id}
+              ListHeaderComponent={
+                <>
+                  <Animated.View
+                    style={{
+                      transform: [{ translateY: streakTranslate }],
+                      opacity: streakOpacity,
+                      paddingHorizontal: 16,
+                      paddingTop: Platform.OS === "ios" ? 100 : 90,
+                    }}
+                  >
+                    <StreakCard />
+                  </Animated.View>
 
-            {/* Now before Blogs start, wrap in a View with padding */}
-            <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
-              {blogs.length === 0 && !loading && (
-                <View style={{ marginTop: 20, alignItems: 'center' }}>
-                  <Text>No posts available</Text>
+                  <Tegs />
+
+                  <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+                    {blogs.length === 0 && !loading && (
+                      <View style={{ marginTop: 20, alignItems: "center" }}>
+                        <Text>No posts available</Text>
+                      </View>
+                    )}
+                  </View>
+                </>
+              }
+              renderItem={({ item }) => (
+                <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+                  <BlogCard
+                    userImage={item.createdBy.profileimg}
+                    userName={item?.createdBy.username}
+                    userDesignation={item.toptitle}
+                    caption={item.content}
+                    postImage={item.coverImageURL}
+                    likesCount={item.likeCount}
+                    commentsCount={item.commentsCount || 0}
+                    isLiked={item.likedByCurrentUser}
+                    onCommentPress={() => openBottomSheet(item)}
+                  />
                 </View>
               )}
-            </View>
-          </>
-        }
-        renderItem={({ item }) => (
-          <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
-            <BlogCard
-              userImage={item.createdBy.profileimg}
-              userName={item?.createdBy.username}
-              userDesignation={item.toptitle}
-              caption={item.content}
-              postImage={item.coverImageURL}
-              likesCount={item.likeCount}
-              commentsCount={item.commentsCount || 0}
-              isLiked={item.likedByCurrentUser}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
+              showsVerticalScrollIndicator={false}
+              scrollEventThrottle={16}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                { useNativeDriver: false }
+              )}
             />
-          </View>
-        )}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          )
         }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-      />
-    </View>
+
+        {/* BottomSheet */}
+        <BottomSheet
+          ref={sheetRef}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose
+          style={{ zIndex: 999 }}
+          backgroundStyle={{ backgroundColor: "#000000" }}
+          handleIndicatorStyle={{ backgroundColor: "#444" }}
+        >
+          {selectedBlog ? (
+            <>
+              {/* Scrollable Comments */}
+              <BottomSheetFlatList
+                data={comments}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <CommentCard comment={item} />
+                )}
+                contentContainerStyle={[styles.commentContainerDark, { marginBottom : 100 }]} // 👈 add padding for input space
+              />
+
+              {/* Absolute Positioned Input */}
+              <View style={styles.inputContainer}>
+                <CommentInput
+                  postId={selectedBlog._id}
+                  commentOn="Post"
+                  setComments={setComments}
+                />
+              </View>
+            </>
+          ) : (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <Spinner />
+            </View>
+          )}
+        </BottomSheet>
+      </View>
+    </GestureHandlerRootView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0F0F0F",
   },
-  header: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 50 : 20,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    backgroundColor: "blur",
-    paddingHorizontal: 16,
-    marginHorizontal: 24,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    height: 50,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: 10,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    resizeMode: "contain",
-  },
-  menuButton: {
-    padding: 10,
-  },
   scrollContent: {
     paddingBottom: 60,
   },
-  sectionHeader: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+  inputContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    backgroundColor: '#0F0F0F',
+    padding: 8,
   },
-  sectionTitle: {
-    color: "#FFFFFF",
-    fontSize: 20,
-    fontWeight: "700",
+  commentContainer: {
+    backgroundColor: "white",
+    paddingBottom: 20,
   },
-  tagContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 15,
-    gap: 8,
-    height: 60,
-    alignItems: "center",
+  commentItem: {
+    padding: 14,
+    borderBottomColor: "#eee",
+    borderBottomWidth: 1,
   },
-  tag: {
-    borderColor: "#fff",
-    borderWidth: 0.4,
-    borderRadius: 20,
-    height: 30,
-    paddingHorizontal: 16,
-    justifyContent: "center",
-    alignItems: "center",
+  commentContainerDark: {
+    backgroundColor: "#0F0F0F",
+    zIndex: 999,
+    marginBottom: 80,
   },
-  tagText: {
-    color: "#fff",
-    fontSize: 13,
+  commentItemDark: {
+    padding: 14,
+    borderBottomColor: "#222",
+    borderBottomWidth: 1,
   },
 });
+
+export default IndexScreen;

@@ -9,7 +9,10 @@ import '@/global.css';
 import { View, Text } from 'react-native';
 import { ErrorBoundary } from 'react-error-boundary';
 import LoadingScreen from '@/components/Loading';
+import 'react-native-gesture-handler';
+import 'react-native-reanimated'; // Important for bottom-sheet
 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
@@ -107,8 +110,10 @@ export default function RootLayout() {
           </View>
         }
       >
-        <Slot />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Slot />
+        </GestureHandlerRootView>
       </ErrorBoundary>
-    </ThemeProvider>
+    </ThemeProvider >
   );
 }

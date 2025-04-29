@@ -1,32 +1,133 @@
-import React, { useRef } from "react";
+
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import React, { useMemo, useRef, useCallback, useState, useEffect } from "react";
 import {
   View,
-  Pressable,
   Text,
-  Image,
   StyleSheet,
   Dimensions,
   Animated,
-  ScrollView,
   Platform,
   TouchableOpacity,
+  FlatList,
+  RefreshControl,
+  Button,
 } from "react-native";
 import { useRouter } from "expo-router";
+import NotificationIcon from "@/assets/icons/Bellicon";
 import { useAuthStore } from "@/store/authStore";
 import StreakCard from "@/components/Home/StreakCard";
+import BlogCard from "@/components/PostCard";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
+import Posts from "@/components/Services Componet/Posts";
+import Header from "@/components/Header";
 import Spinner from "@/components/LoadingCircle";
+import Tegs from "@/components/Services Componet/trandingtegs";
+import axios from "axios";
 
 const { width, height } = Dimensions.get("window");
 
-const TAGS = ["#SRHvsMI", "#Pakistan", "#RohitSharma", "#MI", "#Umpire", "#SAARC"];
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + "tweets/getblogsadv?q=newestfirst";
 
-export default function IndexScreen() {
-  const router = useRouter();
-  const user = useAuthStore((state) => state.user);
+interface Blog {
+  _id: string;
+  content: string;
+  coverImageURL: string;
+  toptitle: string;
+  createdBy: {
+    _id: string;
+    username: string;
+    profileimg: string;
+  };
+  commentsCount: number;
+  likeCount: number;
+  likedByCurrentUser: boolean;
+  subscribedByCurrentUser: boolean;
+};
 
+const IndexScreen = () => {
+  const sheetRef = useRef<BottomSheet>(null);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const data = useMemo(() =>
+    Array(30)
+      .fill(0)
+      .map((_, index) => `Comment ${index}`),
+    []);
+
+  const snapPoints = useMemo(() => ["25%", "50%", "90%"], []);
+
+  const handleSnapPress = (index: number) => {
+    sheetRef.current?.snapToIndex(index);
+  };
+
+  const handleClosePress = () => {
+    sheetRef.current?.close();
+  };
+
+  const renderItem = useCallback(
+    ({ item }: { item: string }) => (
+      <View style={styles.itemContainer}>
+        <Text style={{ color: 'black' }}>{item}</Text>
+      </View>
+    ),
+    []
+  );
+
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const { user } = useAuthStore(); // Assuming jwt token stored
+
+  const fetchBlogs = useCallback(async (refresh = false) => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await axios.get(`${API_URL}&limit=10&page=${refresh ? 1 : page}`, {
+        headers: user?.jwt ? { Authorization: `Bearer ${user.jwt}` } : {},
+      });
+
+      const fetchedBlogs = res.data.data.blogs || [];
+      const newPage = res.data.data.page;
+      const newTotalPages = res.data.data.totalPages;
+
+      if (refresh) {
+        setBlogs(fetchedBlogs);
+      } else {
+        setBlogs((prev) => [...prev, ...fetchedBlogs]);
+      }
+      setPage(newPage);
+      setTotalPages(newTotalPages);
+    } catch (err: any) {
+      console.error("Error fetching blogs:", err);
+      setError(err?.response?.data?.message || "Something went wrong!");
+    } finally {
+      setLoading(false);
+      if (refresh) setRefreshing(false);
+    }
+  }, [page, user]);
+
+  useEffect(() => {
+    fetchBlogs(true);
+  }, []);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchBlogs(true);
+  };
+
+  const handleLoadMore = () => {
+    if (page < totalPages && !loading) {
+      setPage((prev) => prev + 1);
+    }
+  };
 
   const streakTranslate = scrollY.interpolate({
     inputRange: [0, 100],
@@ -41,178 +142,119 @@ export default function IndexScreen() {
   });
 
   return (
-    <View style={styles.container}>
-      {/* Fixed Header */}
-      <BlurView
-        intensity={130}
-        tint="dark"
-        style={{
-          borderColor: "#fff",
-          borderWidth: 0.4,
-          position: "absolute",
-          top: Platform.OS === "ios" ? 50 : 20,
-          left: 16,
-          right: 16,
-          zIndex: 10,
-          borderRadius: 30,
-          overflow: "hidden",
-          height: 50,
-          paddingHorizontal: 16,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}
-      >
-        <Image source={require("@/assets/images/logomainwithouttegline.png")} style={styles.logo} />
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity onPress={() => router.push("/")} style={styles.menuButton}>
-            <Ionicons name="search" size={20} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push("/")} style={styles.menuButton}>
-            <Ionicons name="notifications-outline" size={20} color="white" />
-          </TouchableOpacity>
-        </View>
-      </BlurView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
 
-      {/* Scrollable Content */}
-      <Animated.ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-      >
-        {/* Animated Streak Card */}
-        <Animated.View
-          style={{
-            transform: [{ translateY: streakTranslate }],
-            opacity: streakOpacity,
-            paddingHorizontal: 16,
-            paddingTop: 60,
-            paddingBottom: 0,
-          }}
-        >
-          <StreakCard />
-        </Animated.View>
+      <View style={styles.container}>
+        <Header />
+        <FlatList
+          contentContainerStyle={styles.scrollContent}
+          data={blogs}
+          keyExtractor={(item) => item._id}
+          ListHeaderComponent={
+            <>
+              {/* Animated StreakCard */}
+              <Animated.View
+                style={{
+                  transform: [{ translateY: streakTranslate }],
+                  opacity: streakOpacity,
+                  paddingHorizontal: 16,
+                  paddingTop: Platform.OS === "ios" ? 100 : 90,
+                  paddingBottom: 0,
+                }}
+              >
+                <StreakCard />
+              </Animated.View>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Tranding In India</Text>
-        </View>
+              {/* Trending Tags */}
+              <Tegs />
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tagContainer}
-        >
-          {TAGS.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
+              {/* Empty State */}
+              <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+                {blogs.length === 0 && !loading && (
+                  <View style={{ marginTop: 20, alignItems: "center" }}>
+                    <Text>No posts available</Text>
+                  </View>
+                )}
+              </View>
+            </>
+          }
+          renderItem={({ item }) => (
+            <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+              <BlogCard
+                userImage={item.createdBy.profileimg}
+                userName={item?.createdBy.username}
+                userDesignation={item.toptitle}
+                caption={item.content}
+                postImage={item.coverImageURL}
+                likesCount={item.likeCount}
+                commentsCount={item.commentsCount || 0}
+                isLiked={item.likedByCurrentUser}
+                onCommentPress={() => handleSnapPress(0)}
+              />
             </View>
-          ))}
-        </ScrollView>
+          )}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+        />
+        {/* BottomSheet */}
+        <BottomSheet
+          ref={sheetRef}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose
+          style={{ zIndex: 999 }} // 👈 helps lift above tabs
+        >
+          <BottomSheetFlatList
+            data={data}
+            keyExtractor={(item) => item}
+            renderItem={renderItem}
+            contentContainerStyle={styles.contentContainer}
 
-        <View className="flex justify-center items-center gap-2 mt-4">
-          <Spinner />
-        </View>
-
-
-      </Animated.ScrollView>
-    </View>
+          />
+        </BottomSheet>
+      </View>
+    </GestureHandlerRootView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0F0F0F",
   },
-  header: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 50 : 20,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    backgroundColor: "blur",
+  topContainer: {
+    paddingTop: 80,
     paddingHorizontal: 16,
-    marginHorizontal: 24,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    height: 50,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: 10,
   },
-  logo: {
-    width: 100,
-    height: 100,
-    resizeMode: "contain",
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "white",
   },
-  menuButton: {
-    padding: 10,
+  buttonGroup: {
+    marginTop: 30,
+    gap: 10,
+    paddingHorizontal: 16,
   },
   scrollContent: {
-    paddingTop: Platform.OS === "ios" ? 100 : 50,
+    paddingBottom: 60,
   },
-  sectionHeader: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+  contentContainer: {
+    backgroundColor: "white",
+    paddingBottom: 20,
   },
-  sectionTitle: {
-    color: "#FFFFFF",
-    fontSize: 20,
-    fontWeight: "700",
-  },
-  tagContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 15,
-    gap: 8,
-    height: 60,
-    alignItems: "center",
-  },
-  tag: {
-    borderColor: "#fff",
-    borderWidth: 0.4,
-    borderRadius: 20,
-    height: 30,
-    paddingHorizontal: 16,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  tagText: {
-    color: "#fff",
-    fontSize: 13,
-  },
-  bottomButtonContainer: {
-    position: "absolute",
-    bottom: 80,
-    left: 16,
-    right: 16,
-  },
-  bottomButton: {
-    height: 56,
-    backgroundColor: "#FFB700",
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  bottomButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
+  itemContainer: {
+    padding: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#ccc",
   },
 });
+
+export default IndexScreen;

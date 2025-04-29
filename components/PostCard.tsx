@@ -14,6 +14,7 @@ import {
     CommentIcon,
     CustomShare,
 } from "@/assets/icons/iconsheader";
+import { Share } from 'react-native';
 
 interface BlogCardProps {
     userImage?: string;
@@ -24,6 +25,7 @@ interface BlogCardProps {
     likesCount: number;
     commentsCount: number;
     isLiked?: boolean;
+    onCommentPress?: () => void;
 }
 
 const { width } = Dimensions.get('window');
@@ -37,12 +39,26 @@ const BlogCard: React.FC<BlogCardProps> = ({
     likesCount,
     commentsCount,
     isLiked = false,
+    onCommentPress
 }) => {
+    // Theme & state
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
 
     const [imageAspectRatio, setImageAspectRatio] = useState<number>(1);
     const [imageLoading, setImageLoading] = useState<boolean>(true);
+
+    const handleShare = async () => {
+        try {
+            await Share.share({
+                title: 'Check this post!',
+                message: caption + '\n\nSee more in our app!',
+                url: postImage || undefined,
+            });
+        } catch (error) {
+            console.error('Error sharing', error);
+        }
+    };
 
     // Theme colors
     const themeStyles = {
@@ -147,12 +163,12 @@ const BlogCard: React.FC<BlogCardProps> = ({
                         <Text style={[styles.actionText, themeStyles.text]}>{likesCount}</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.actionButton}>
+                    <TouchableOpacity style={styles.actionButton} onPress={onCommentPress}>
                         <CommentIcon color={themeStyles.iconColor} />
                         <Text style={[styles.actionText, themeStyles.text]}>{commentsCount}</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.actionButton}>
+                    <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
                         <CustomShare size={19} color={themeStyles.iconColor} />
                     </TouchableOpacity>
                 </View>

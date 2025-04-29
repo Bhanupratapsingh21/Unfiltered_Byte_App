@@ -138,12 +138,7 @@ export default function IndexScreen() {
               likesCount={i * 10 + 3}
               commentsCount={i * 2 + 1}
               isLiked={true}
-              isSaved={false}
-              onMenuPress={() => { }}
-              onLikePress={() => { }}
               onCommentPress={() => { }}
-              onSharePress={() => { }}
-              onSavePress={() => { }}
             />
           ))}
         </View>
