@@ -9,7 +9,7 @@ interface Blog {
       username: string;
       profileimg: string;
     };
-    commentsCount: number;
+    commentCount: number;
     likeCount: number;
     likedByCurrentUser: boolean;
     subscribedByCurrentUser: boolean;

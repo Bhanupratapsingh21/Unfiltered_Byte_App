@@ -1,5 +1,5 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetFlatList, BottomSheetFooter, BottomSheetFooterContainer } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import React, { useMemo, useRef, useCallback, useState, useEffect } from "react";
 import {
   View,
@@ -9,8 +9,9 @@ import {
   Platform,
   FlatList,
   RefreshControl,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import StreakCard from "@/components/Home/StreakCard";
 import BlogCard from "@/components/PostCard";
@@ -23,20 +24,21 @@ import { POSTS_API_URL as API_URL } from "@/utils/ApiRoutes";
 import CommentInput from '@/components/CommentsInput';
 import CommentTypes from '@/types/Commentstypes';
 import CommentCard from '@/components/CommentsCard';
-import fetchComments from '@/utils/getcomments';
+import fetchComments from '@/lib/fetchComments';
 
 const IndexScreen = () => {
   const sheetRef = useRef<BottomSheet>(null);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const snapPoints = useMemo(() => ["20%", "40%", "80%"], ["20%", "40%", "80%"]);
+  const snapPoints = useMemo(() => ["1%", "80%", "90%", "85%"], []);
 
-  // AuthStore
   const { user } = useAuthStore(); // jwt token
 
-  // Comments State
   const [comments, setComments] = useState<CommentTypes[]>([]);
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
+  const [pageComment, setPageComment] = useState(1);
+  const [totalCommentPages, setTotalCommentPages] = useState(1);
 
-  // Posts State
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(false);
@@ -45,7 +47,8 @@ const IndexScreen = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch Posts
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   const fetchBlogs = useCallback(async (refresh = false) => {
     if (loading) return;
     setLoading(true);
@@ -76,43 +79,61 @@ const IndexScreen = () => {
     }
   }, [page, user]);
 
-  // Call Fn on Component Mount or when page changes Load
   useEffect(() => {
     fetchBlogs(true);
   }, []);
 
-
-  // Posts Controlers
   const handleRefresh = () => {
     setRefreshing(true);
     fetchBlogs(true);
   };
+
   const handleLoadMore = () => {
     if (page < totalPages && !loading) {
       setPage((prev) => prev + 1);
     }
   };
 
-
-  // BottomSheet Controlers
   const openBottomSheet = (blog: Blog) => {
     setSelectedBlog(blog);
-    fetchComments(blog._id, setComments);
-    sheetRef.current?.snapToIndex(3);
+    sheetRef.current?.snapToIndex(2); // open at 90%
+    setPageComment(1);
+    setCommentLoading(true);
+    setCommentError(null);
+    setComments([]);
+    setTimeout(() => {
+      fetchComments(blog._id, 1, setComments, setCommentLoading, setCommentError, user);
+    }, 0);
   };
 
-  // Style Animations
+  const handleLoadMoreComments = () => {
+    if (pageComment < totalCommentPages && !commentLoading && selectedBlog) {
+      const nextPage = pageComment + 1;
+      setPageComment(nextPage);
+
+      fetchComments(
+        selectedBlog._id,
+        nextPage,
+        setComments,
+        setCommentLoading,
+        setCommentError,
+        user,
+        comments
+      );
+    }
+  };
+
   const streakTranslate = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: [0, -60],
     extrapolate: "clamp",
   });
+
   const streakOpacity = scrollY.interpolate({
     inputRange: [0, 50],
     outputRange: [1, 0],
     extrapolate: "clamp",
   });
-
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -156,15 +177,16 @@ const IndexScreen = () => {
               renderItem={({ item }) => (
                 <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
                   <BlogCard
+                    postId={item._id}
                     userImage={item.createdBy.profileimg}
                     userName={item?.createdBy.username}
                     userDesignation={item.toptitle}
                     caption={item.content}
                     postImage={item.coverImageURL}
                     likesCount={item.likeCount}
-                    commentsCount={item.commentsCount || 0}
-                    isLiked={item.likedByCurrentUser}
-                    onCommentPress={() => openBottomSheet(item)}
+                    commentsCount={item.commentCount || 0}
+                    isLiked={item.likedByCurrentUser || false}
+                    onCommentPress={() => { openBottomSheet(item) }}
                   />
                 </View>
               )}
@@ -177,9 +199,18 @@ const IndexScreen = () => {
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                 { useNativeDriver: false }
               )}
+              keyboardShouldPersistTaps="handled"
             />
           )
         }
+
+        {/* Transparent Overlay for Outside Tap Close 
+        {isSheetOpen && (
+          <TouchableWithoutFeedback onPress={() => sheetRef.current?.close()}>
+            <View style={styles.overlay} />
+          </TouchableWithoutFeedback>
+        )}
+          */}
 
         {/* BottomSheet */}
         <BottomSheet
@@ -187,23 +218,41 @@ const IndexScreen = () => {
           index={-1}
           snapPoints={snapPoints}
           enablePanDownToClose
+          onChange={(index) => {
+            if (index === -1 || index === 0) {
+              setIsSheetOpen(false);
+            } else {
+              setIsSheetOpen(true);
+            }
+          }}
           style={{ zIndex: 999 }}
           backgroundStyle={{ backgroundColor: "#000000" }}
           handleIndicatorStyle={{ backgroundColor: "#444" }}
         >
-          {selectedBlog ? (
+          {selectedBlog && !commentLoading ? (
             <>
-              {/* Scrollable Comments */}
+              <View style={{ padding: 16, paddingBottom: 5 }}>
+                <Text style={{ fontSize: 18, textAlign: "center", color: "#fff", fontWeight: "bold" }}>
+                  Swipe Up To Comment ↑
+                </Text>
+              </View>
               <BottomSheetFlatList
                 data={comments}
                 keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <CommentCard comment={item} />
-                )}
-                contentContainerStyle={[styles.commentContainerDark, { marginBottom : 100 }]} // 👈 add padding for input space
+                renderItem={({ item }) => <CommentCard comment={item} />}
+                contentContainerStyle={[styles.commentContainerDark, { marginBottom: 100 }]}
+                onEndReached={handleLoadMoreComments}
+                onEndReachedThreshold={0.5}
               />
 
-              {/* Absolute Positioned Input */}
+              {commentError && (
+                <View style={{ marginBottom: 50, padding: 20, flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontSize: 16, color: "red", textAlign: 'center' }}>
+                    {commentError}
+                  </Text>
+                </View>
+              )}
+
               <View style={styles.inputContainer}>
                 <CommentInput
                   postId={selectedBlog._id}
@@ -218,6 +267,7 @@ const IndexScreen = () => {
             </View>
           )}
         </BottomSheet>
+
       </View>
     </GestureHandlerRootView>
   );
@@ -233,29 +283,24 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 65,
     width: '100%',
     backgroundColor: '#0F0F0F',
     padding: 8,
-  },
-  commentContainer: {
-    backgroundColor: "white",
-    paddingBottom: 20,
-  },
-  commentItem: {
-    padding: 14,
-    borderBottomColor: "#eee",
-    borderBottomWidth: 1,
   },
   commentContainerDark: {
     backgroundColor: "#0F0F0F",
     zIndex: 999,
     marginBottom: 80,
   },
-  commentItemDark: {
-    padding: 14,
-    borderBottomColor: "#222",
-    borderBottomWidth: 1,
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "transparent",
+    zIndex: 10,
   },
 });
 

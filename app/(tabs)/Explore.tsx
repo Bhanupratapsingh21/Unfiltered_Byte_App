@@ -206,7 +206,7 @@ const IndexScreen = () => {
         {/* BottomSheet */}
         <BottomSheet
           ref={sheetRef}
-          index={-1}
+          index={0}
           snapPoints={snapPoints}
           enablePanDownToClose
           style={{ zIndex: 999 }} // 👈 helps lift above tabs

@@ -3,6 +3,7 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator 
 import { useAuthStore } from '@/store/authStore';
 import axios from 'axios';
 import CommentTypes from '@/types/Commentstypes';
+import { POST_COMMENTS_URL } from '@/utils/ApiRoutes';
 interface CommentInputProps {
     postId: string | undefined;
     commentOn: 'Post' | 'Video';
@@ -17,7 +18,7 @@ const CommentInput: React.FC<CommentInputProps> = ({ postId, commentOn, setComme
 
     const handleSubmit = async () => {
         if (!content.trim()) return;
-
+        //console.log(userProfile)
         setLoading(true);
         try {
             const payload = {
@@ -25,20 +26,21 @@ const CommentInput: React.FC<CommentInputProps> = ({ postId, commentOn, setComme
                 commenton: commentOn,
                 postId,
                 owner: {
-                    _id: user?.$id, // assuming you have $id or id
+                    _id: userProfile?.userId, // assuming you have $id or id
                     username: userProfile?.username,
                     profileimg: userProfile?.profilepicture,
                 }
             };
 
             // Replace with your API endpoint for posting comment
-            await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}comments/add`, payload, {
+            await axios.post(`${POST_COMMENTS_URL + postId}`, payload, {
                 headers: user?.jwt ? { Authorization: `Bearer ${user.jwt}` } : {},
             });
 
             setContent(''); // Clear input
             if (setComments) setComments((prevComments) => [...prevComments, payload as CommentTypes]); // Update comments state if provided
         } catch (error) {
+            //console.log(error.response);
             console.error('Error posting comment:', error);
         } finally {
             setLoading(false);
@@ -69,14 +71,11 @@ const CommentInput: React.FC<CommentInputProps> = ({ postId, commentOn, setComme
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        backgroundColor: '#1a1a1a',
-        borderTopWidth: 1,
-        borderColor: '#333',
+        backgroundColor: 'transparent',
         paddingHorizontal: 10,
         paddingVertical: 8,
         alignItems: 'center',
-        borderTopLeftRadius : 20,
-        borderTopRightRadius : 20,
+
     },
     input: {
         flex: 1,

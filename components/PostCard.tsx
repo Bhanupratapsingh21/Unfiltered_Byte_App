@@ -15,8 +15,12 @@ import {
     CustomShare,
 } from "@/assets/icons/iconsheader";
 import { Share } from 'react-native';
+import { TOGGLE_LIKE_URL } from '@/utils/ApiRoutes';
+import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
 
 interface BlogCardProps {
+    postId: string;
     userImage?: string;
     userName: string;
     userDesignation: string;
@@ -31,6 +35,7 @@ interface BlogCardProps {
 const { width } = Dimensions.get('window');
 
 const BlogCard: React.FC<BlogCardProps> = ({
+    postId,
     userImage,
     userName,
     userDesignation,
@@ -47,6 +52,35 @@ const BlogCard: React.FC<BlogCardProps> = ({
 
     const [imageAspectRatio, setImageAspectRatio] = useState<number>(1);
     const [imageLoading, setImageLoading] = useState<boolean>(true);
+    const [liked, setLiked] = useState(isLiked);
+    const [likeCount, setLikeCount] = useState(likesCount);
+    const [likeCooldown, setLikeCooldown] = useState(false);
+    const { user } = useAuthStore(); // Assuming you have a user store
+    const toggleLike = async () => {
+
+        if (likeCooldown) return;
+
+        // Start cooldown
+        setLikeCooldown(true);
+        setTimeout(() => setLikeCooldown(false), 1000); // 1 second debounce
+
+        const newLiked = !liked;
+        setLiked(newLiked);
+        setLikeCount((prev) => prev + (newLiked ? 1 : -1));
+
+        try {
+            await axios.get(`${TOGGLE_LIKE_URL + postId}`, {
+                headers: user?.jwt ? { Authorization: `Bearer ${user.jwt}` } : {},
+                timeout: 5000, // optional: timeout if network is poor
+            });
+        } catch (error) {
+            // Revert UI on failure
+            console.error("Error toggling like:", error);
+            setLiked(!newLiked);
+            setLikeCount((prev) => prev - (newLiked ? 1 : -1));
+        }
+    };
+
 
     const handleShare = async () => {
         try {
@@ -154,13 +188,13 @@ const BlogCard: React.FC<BlogCardProps> = ({
             {/* Action Buttons */}
             <View style={styles.actionsContainer}>
                 <View style={styles.leftActions}>
-                    <TouchableOpacity style={styles.actionButton}>
+                    <TouchableOpacity style={styles.actionButton} onPress={toggleLike}>
                         <Ionicons
-                            name={isLiked ? "heart" : "heart-outline"}
+                            name={liked ? "heart" : "heart-outline"}
                             size={24}
-                            color={isLiked ? themeStyles.activeIconColor : themeStyles.iconColor}
+                            color={liked ? themeStyles.activeIconColor : themeStyles.iconColor}
                         />
-                        <Text style={[styles.actionText, themeStyles.text]}>{likesCount}</Text>
+                        <Text style={[styles.actionText, themeStyles.text]}>{likeCount}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.actionButton} onPress={onCommentPress}>
