@@ -1,14 +1,20 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Link, RelativePathString } from 'expo-router';
-import defaultCategories from '@/Data/Categorys';
+import activitiesData from "@/Data/activity";
 
 const Categories = ({ categories = [] }) => {
-    const items = categories.length > 0 ? categories : defaultCategories;
+    let items: string[] = []
+    
+    activitiesData.forEach((item) => {
+        if (!items.includes(item.type)) {
+            items.push(item.type);
+        }
+    });
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Categories</Text>
+            <Text style={styles.title}>Activity Categories</Text>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -18,12 +24,10 @@ const Categories = ({ categories = [] }) => {
                     <Link
                         key={index}
                         style={styles.cardWrapper}
-                        href={`/Activitys/${item.type}` as RelativePathString}
+                        href={`/Activitys/${item}` as RelativePathString}
                     >
-                        <View style={[styles.card, { backgroundColor: item.bgColor }]}>
-                            <View style={[styles.iconContainer, { backgroundColor: item.iconBgColor }]}>
-                                {item.icon}
-                            </View>
+                        <View style={styles.tag}>
+                            <Text style={styles.tagText}>{item}</Text>
                         </View>
                     </Link>
                 ))}
@@ -36,16 +40,18 @@ export default Categories;
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: 16,
+
         paddingBottom: 10,
     },
     title: {
+        paddingHorizontal: 16,
         fontWeight: '800',
         fontSize: 20,
         color: '#FFFFFF',
         marginBottom: 8,
     },
     scrollContainer: {
+        paddingLeft : 16,
         paddingVertical: 5,
     },
     cardWrapper: {
@@ -69,5 +75,46 @@ const styles = StyleSheet.create({
         borderRadius: 18,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    tagContainer: {
+        paddingHorizontal: 16,
+        paddingBottom: 15,
+        gap: 8,
+        height: 60,
+        alignItems: "center",
+    },
+    tag: {
+        borderColor: "#fff",
+        borderWidth: 0.4,
+        borderRadius: 20,
+        height: 30,
+        paddingHorizontal: 16,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
+    tagText: {
+        color: "#fff",
+        fontSize: 13,
+        fontWeight: "500",
+    },
+    sectionHeader: {
+        paddingHorizontal: 16,
+        paddingBottom: 8,
+    },
+    sectionTitle: {
+        color: "#FFFFFF",
+        fontSize: 20,
+        fontWeight: "700",
+    },
+    errorText: {
+        color: "#ff4444",
+        fontSize: 12,
+        marginTop: 4,
+    },
+    loadingContainer: {
+        height: 60,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });

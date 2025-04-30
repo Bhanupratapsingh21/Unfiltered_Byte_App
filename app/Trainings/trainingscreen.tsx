@@ -16,6 +16,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import Feather from '@expo/vector-icons/Feather';
 import ActivityService from '@/lib/activity';
 import { ActivityType } from '@/types/activitycard.types';
+import activitiesData from '@/Data/activity';
 
 // Define the type for steps if not already defined
 type StepType = string; // Adjust this type based on your actual data structure
@@ -24,7 +25,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function ActivityDetailScreen() {
     const scrollX = useRef(new Animated.Value(0)).current;
-    const [activity, setActivity] = useState<(ActivityType & { steps?: StepType[] }) | null>(null);
+    const [activity, setActivity] = useState<ActivityType | undefined>(undefined);
     const { id } = useLocalSearchParams();
 
     const scrollViewRef = useRef<ScrollView>(null);
@@ -42,12 +43,16 @@ export default function ActivityDetailScreen() {
                     throw new Error('Invalid activity ID');
                 }
 
-                const fetchedActivity = await ActivityService.getActivityById(id);
-                setActivity(fetchedActivity);
+                const fetchedActivity = activitiesData.filter((item) => {
+                    if (item.id === id) {
+                        setActivity(item as ActivityType);
+                        setLoading(false);
+                    }
+                });
 
                 // Set images from the activity data or use defaults
-                if (fetchedActivity.imagepath) {
-                    setImages(fetchedActivity.imagepath);
+                if (fetchedActivity.length > 0 && fetchedActivity[0].image) {
+                    setImages([fetchedActivity[0].image]);
                 } else {
                     setImages([
                         require('@/assets/images/image.png'),

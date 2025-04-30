@@ -520,11 +520,13 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         borderRadius: 10,
         padding: 15,
+        height: "auto",
         marginBottom: 15,
         fontSize: 16,
     },
     contentInput: {
-        minHeight: 120,
+        minHeight: 200,
+        height: 'auto',
         textAlignVertical: 'top',
     },
     imagePickerContainer: {

@@ -8,12 +8,13 @@ import { Audio } from 'expo-av';
 import Slider from '@react-native-community/slider';
 import ActivityService from '@/lib/activity';
 import { ActivityType } from '@/types/activitycard.types';
+import activitiesData from '@/Data/activity';
 
 const { width, height } = Dimensions.get('window');
 
 export default function ActivityDetailScreen() {
     const { id } = useLocalSearchParams();
-    const [activity, setActivity] = useState<ActivityType | null>(null);
+    const [activity, setActivity] = useState<ActivityType | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -33,8 +34,12 @@ export default function ActivityDetailScreen() {
                     throw new Error('Invalid activity ID');
                 }
 
-                const fetchedActivity = await ActivityService.getActivityById(id);
-                setActivity(fetchedActivity);
+                activitiesData.filter((item) => {
+                    if (item.id === id) {
+                        setActivity(item as ActivityType);
+                        setLoading(false);
+                    }
+                });
             } catch (err) {
                 console.error('Error fetching activity:', err);
                 setError('Failed to load activity. Please try again.');
@@ -181,7 +186,7 @@ export default function ActivityDetailScreen() {
                 {/* Image */}
                 <View style={styles.imageContainer}>
                     <Image
-                        source={{ uri: activity.imagepath[0] }}
+                        source={{ uri: activity.imagepath?.[0] ?? '' }}
                         style={styles.image}
                         resizeMode="cover"
                     />

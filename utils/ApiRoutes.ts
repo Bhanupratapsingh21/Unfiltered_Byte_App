@@ -6,6 +6,9 @@ const POST_COMMENTS_URL = BASE_URL + "comment/postcomment/Post/";
 const GET_COMMENTS_URL = BASE_URL + "comment/getcomments/";
 const TOGGLE_LIKE_URL = BASE_URL + "like/tweet/";
 const TOGGLE_LIKE_COMMENT_URL = BASE_URL + "like/comment/";
+const GETTEGS_URL = BASE_URL + "tranding/";
+
+
 export {
     POSTS_API_URL,
     API_URL2,
@@ -13,5 +16,6 @@ export {
     GET_COMMENTS_URL,
     TOGGLE_LIKE_URL,
     TOGGLE_LIKE_COMMENT_URL,
+    GETTEGS_URL,
     // Add other API routes here as needed
 }

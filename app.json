@@ -42,6 +42,16 @@
       "backgroundColor": "#000000"
     },
     "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#FFB700",
+          "sounds": [
+            "./assets/audios/digital.mp3"
+          ]
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",

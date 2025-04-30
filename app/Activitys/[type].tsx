@@ -5,9 +5,8 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import ActivityCard from "@/components/Home/ActivityCard";
 import ActivityService from "@/lib/activity";
 import { ActivityType } from "@/types/activitycard.types";
+import activitiesData from "@/Data/activity";
 
-// Define valid activity types
-const validTypes = ["Anger", "Fear", "Calm", "Blame", "Sorrow", "Confusion", "Happiness"];
 
 export default function ActivitiesByTypeScreen() {
     const { type } = useLocalSearchParams();
@@ -20,55 +19,28 @@ export default function ActivitiesByTypeScreen() {
 
     const limit = 10; // Number of items per page
 
-    // Validate type parameter
-    const normalizedType = typeof type === 'string' ? type : Array.isArray(type) ? type[0] : '';
-    const isValidType = validTypes.includes(normalizedType);
-
-    // Get title for header based on type
-    const getTitle = () => {
-        if (!isValidType) return "Activities";
-        return `${normalizedType} Activities`;
-    };
 
     // Fetch activities with pagination
-    const fetchActivities = useCallback(async (pageNum: number, isRefreshing = false) => {
-        if (!isValidType) return;
+    const fetchActivities = useCallback(async () => {
 
         try {
-            if (!isRefreshing) setLoading(true);
+            setLoading(true);
             setError(null);
+            const newActivities = activitiesData.filter(activity => activity.type === type);
+            setActivities(newActivities as ActivityType[]);
 
-            const newActivities = await ActivityService.getActivities({
-                limit,
-                offset: (pageNum - 1) * limit,
-                filters: {
-                    type: normalizedType
-                },
-                sortField: "title",
-                sortOrder: "asc",
-            });
-
-            if (newActivities.length === 0) {
-                setHasMore(false);
-            } else {
-                if (pageNum === 1) {
-                    setActivities(newActivities);
-                } else {
-                    setActivities(prev => [...prev, ...newActivities]);
-                }
-            }
         } catch (err) {
-            setError(`Failed to fetch ${normalizedType.toLowerCase()} activities. Please try again.`);
+            setError(`Failed to fetch activities. Please try again.`);
             console.error("Error fetching activities:", err);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [normalizedType, isValidType]);
+    }, [type]);
 
     // Initial load
     useEffect(() => {
-        fetchActivities(1);
+        fetchActivities();
     }, [fetchActivities]);
 
     // Handle refresh
@@ -76,36 +48,8 @@ export default function ActivitiesByTypeScreen() {
         setRefreshing(true);
         setPage(1);
         setHasMore(true);
-        fetchActivities(1, true);
     }, [fetchActivities]);
 
-    // Handle infinite scroll
-    const handleLoadMore = () => {
-        if (!loading && hasMore && isValidType) {
-            setPage(prev => prev + 1);
-            fetchActivities(page + 1);
-        }
-    };
-
-    if (!isValidType) {
-        return (
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <Pressable onPress={() => router.back()} style={styles.backButton}>
-                        <AntDesign name="arrowleft" size={24} color="white" />
-                    </Pressable>
-                    <Text style={styles.title}>Invalid Activity Type</Text>
-                    <View style={styles.backButton2} />
-                </View>
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>The requested activity type does not exist.</Text>
-                    <Pressable onPress={() => router.back()} style={styles.retryButton}>
-                        <Text style={styles.retryButtonText}>Go Back</Text>
-                    </Pressable>
-                </View>
-            </View>
-        );
-    }
 
     if (error && activities.length === 0) {
         return (
@@ -114,12 +58,12 @@ export default function ActivitiesByTypeScreen() {
                     <Pressable onPress={() => router.back()} style={styles.backButton}>
                         <AntDesign name="arrowleft" size={24} color="white" />
                     </Pressable>
-                    <Text style={styles.title}>{getTitle()}</Text>
+                    <Text style={styles.title}>{type}</Text>
                     <View style={styles.backButton2} />
                 </View>
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>{error}</Text>
-                    <Pressable onPress={() => fetchActivities(1)} style={styles.retryButton}>
+                    <Pressable onPress={() => fetchActivities()} style={styles.retryButton}>
                         <Text style={styles.retryButtonText}>Retry</Text>
                     </Pressable>
                 </View>
@@ -134,7 +78,7 @@ export default function ActivitiesByTypeScreen() {
                 <Pressable onPress={() => router.back()} style={styles.backButton}>
                     <AntDesign name="arrowleft" size={24} color="white" />
                 </Pressable>
-                <Text style={styles.title}>{getTitle()}</Text>
+                <Text style={styles.title}>{type}</Text>
                 <View style={styles.backButton2} />
             </View>
 
@@ -149,27 +93,10 @@ export default function ActivitiesByTypeScreen() {
                         tintColor="#04714A"
                     />
                 }
-                onScroll={({ nativeEvent }) => {
-                    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-                    const paddingToBottom = 20;
-                    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-                        handleLoadMore();
-                    }
-                }}
                 scrollEventThrottle={400}
             >
                 {activities.map(activity => (
-                    <ActivityCard
-                        id={activity.$id}
-                        redirect={`/Trainings/${activity.redirect}?id=${activity.$id}`}
-                        key={activity.$id}
-                        title={activity.title}
-                        description={activity.description}
-                        tags={activity.tags}
-                        duration={activity.duration}
-                        image={activity.image}
-                        colors={activity.colors}
-                    />
+                    <ActivityCard {...activity} />
                 ))}
 
                 {loading && activities.length > 0 && (
