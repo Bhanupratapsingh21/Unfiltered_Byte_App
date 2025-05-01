@@ -29,6 +29,6 @@ export default ImageSlider;
 const styles = StyleSheet.create({
   image: {
     width,
-    height: IMAGE_HEIGHT,
+    height : 400
   },
 });

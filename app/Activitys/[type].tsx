@@ -96,7 +96,7 @@ export default function ActivitiesByTypeScreen() {
                 scrollEventThrottle={400}
             >
                 {activities.map(activity => (
-                    <ActivityCard {...activity} />
+                    <ActivityCard key={activity.id} {...activity} />
                 ))}
 
                 {loading && activities.length > 0 && (

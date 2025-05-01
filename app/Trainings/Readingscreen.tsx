@@ -28,7 +28,7 @@ export default function ActivityDetailScreen() {
 
     useEffect(() => {
         const found = activitiesData.find((item) => item.id === id);
-        setActivity(found as ActivityType);
+        setActivity({...found} as ActivityType);
         setLoading(false);
     }, [id]);
 

@@ -1,18 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, Platform } from "react-native";
 import { useAuthStore } from "@/store/authStore";
 import Svg, { Defs, LinearGradient, Stop, Path } from 'react-native-svg';
+import activitiesData from "@/Data/activity";
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = 330;
 const CARD_HEIGHT = 184;
 
 export default function StreakCard() {
     const userprofile = useAuthStore(state => state.userProfile);
+    const [Activity , setActivity] = useState<String>("");
     const user = useAuthStore(state => state.user);
     const streaks = useAuthStore(state => state.Streak);
 
     const streak = streaks?.streak || 1;
     const streakText = streak > 1 ? `${streak} days` : `${streak} day`;
+    
+    useEffect(()=>{
+        const today = new Date();
+        const day = today.getDate();
+        const firstDigit = Math.floor(day / 10) || 1; // Get the first digit or default to 1
+        activitiesData[firstDigit].exerciseName
+        
+        const activity = activitiesData[firstDigit]?.exerciseName || "an activity";
+        setActivity(`${activity}. Check it out in the Activities Section!`);
+    },[])
     return (
 
         <View style={styles.card}>
@@ -48,7 +60,7 @@ export default function StreakCard() {
             <View style={styles.info}>
                 <View>
                     <Text style={styles.textGray}>Today’s Activity</Text>
-                    <Text style={styles.activityText}>Solve 2 DSA Question's</Text>
+                    <Text style={styles.activityText}>{Activity}</Text>
                 </View>
             </View>
         </View>
@@ -199,7 +211,7 @@ const styles = StyleSheet.create({
     },
     activityText: {
         color: '#FFF',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '600',
         marginTop: 2,
     },

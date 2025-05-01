@@ -153,9 +153,11 @@ const BlogCard: React.FC<BlogCardProps> = ({
                         <Text style={[styles.userDesignation, themeStyles.secondaryText]}>{userDesignation}</Text>
                     </View>
                 </View>
+                {/*
                 <TouchableOpacity style={[styles.menuButton, themeStyles.menuButton]}>
                     <Ionicons name="ellipsis-vertical" size={20} color={themeStyles.iconColor} />
                 </TouchableOpacity>
+                */}
             </View>
 
             {/* Divider */}

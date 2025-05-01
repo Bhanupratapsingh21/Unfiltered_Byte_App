@@ -94,9 +94,9 @@ const IndexScreen = () => {
     }
   };
 
-  const openBottomSheet = (blog: Blog) => {
+  const openBottomSheet = (blog: Blog, index: number) => {
     setSelectedBlog(blog);
-    sheetRef.current?.snapToIndex(2); // open at 90%
+    sheetRef.current?.snapToIndex(index); // open at 90%
     setPageComment(1);
     setCommentLoading(true);
     setCommentError(null);
@@ -186,7 +186,7 @@ const IndexScreen = () => {
                     likesCount={item.likeCount}
                     commentsCount={item.commentCount || 0}
                     isLiked={item.likedByCurrentUser || false}
-                    onCommentPress={() => { openBottomSheet(item) }}
+                    onCommentPress={() => { openBottomSheet(item, 2) }}
                   />
                 </View>
               )}
@@ -218,14 +218,7 @@ const IndexScreen = () => {
           index={-1}
           snapPoints={snapPoints}
           enablePanDownToClose
-          onChange={(index) => {
-            if (index === -1 || index === 0) {
-              setIsSheetOpen(false);
-            } else {
-              setIsSheetOpen(true);
-            }
-          }}
-          style={{ zIndex: 999 }}
+          style={{ zIndex: 999 }} // 
           backgroundStyle={{ backgroundColor: "#000000" }}
           handleIndicatorStyle={{ backgroundColor: "#444" }}
         >

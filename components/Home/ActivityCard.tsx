@@ -68,10 +68,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                                 ))}
                             </View>
 
-                            <TouchableOpacity style={styles.playButton}>
+                            <View style={styles.playButton}>
                                 <FontAwesome name='play-circle' size={20} color={"#ffffff"} />
                                 <Text style={styles.playButtonText}>  {duration}</Text>
-                            </TouchableOpacity>
+                            </View>
                         </View>
 
                         <View style={styles.imageContainer}>
@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
         paddingRight: '30%', // Make space for the image
     },
     textContent: {
+        zIndex  : 5,
         flex: 1,
         padding: 20,
         justifyContent: "space-between",
@@ -224,6 +225,7 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
     imageContainer: {
+        zIndex  : 4,
         position: 'absolute',
         right: 0,
         top: 0,

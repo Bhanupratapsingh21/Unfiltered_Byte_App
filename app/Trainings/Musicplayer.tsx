@@ -9,6 +9,7 @@ import Slider from '@react-native-community/slider';
 import ActivityService from '@/lib/activity';
 import { ActivityType } from '@/types/activitycard.types';
 import activitiesData from '@/Data/activity';
+import ReadingSheet from '@/components/ReadingSheet';
 
 const { width, height } = Dimensions.get('window');
 
@@ -177,18 +178,15 @@ export default function ActivityDetailScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.shareButton}>
-                    <Feather name="send" size={20} color={"#ffffff"} />
-                </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.scrollContainer}>
                 {/* Image */}
                 <View style={styles.imageContainer}>
                     <Image
-                        source={{ uri: activity.imagepath?.[0] ?? '' }}
+                        source={{ uri: activity.image }}
                         style={styles.image}
-                        resizeMode="cover"
+                        resizeMode="contain"
                     />
                     <View style={styles.imageOverlay}>
                         <Text style={styles.imageTitle}>{activity.name}</Text>
@@ -220,9 +218,7 @@ export default function ActivityDetailScreen() {
 
                     {/* Controls */}
                     <View style={styles.playerControls}>
-                        <TouchableOpacity>
-                            <Ionicons name="repeat" size={24} color="#666" />
-                        </TouchableOpacity>
+
 
                         <TouchableOpacity>
                             <Ionicons name="play-skip-back" size={28} color="#333" />
@@ -243,21 +239,17 @@ export default function ActivityDetailScreen() {
                             <Ionicons name="play-skip-forward" size={28} color="#333" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
-                            <Ionicons
-                                name={isLiked ? "heart" : "heart-outline"}
-                                size={24}
-                                color={isLiked ? "red" : "#666"}
-                            />
-                        </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Activity Details */}
                 <View style={styles.detailsContainer}>
-                    <Text style={styles.sectionTitle}>About This Activity</Text>
-                    <Text style={styles.descriptionText}>{activity.activityDescription}</Text>
-
+                    {activity.activityDescription && (
+                        <>
+                            <Text style={styles.sectionTitle}>About This Activity</Text>
+                            <ReadingSheet content={activity.activityDescription} />
+                        </>
+                    )}
                     {activity.steps && activity.steps.length > 0 && (
                         <>
                             <Text style={styles.sectionTitle}>Steps</Text>
@@ -273,13 +265,6 @@ export default function ActivityDetailScreen() {
                     )}
                 </View>
             </ScrollView>
-
-            {/* Track Button */}
-            <View style={styles.trackButtonContainer}>
-                <TouchableOpacity style={styles.trackButton}>
-                    <Text style={styles.trackButtonText}>Track my progress</Text>
-                </TouchableOpacity>
-            </View>
         </View>
     );
 }
@@ -367,7 +352,7 @@ const styles = StyleSheet.create({
     },
     playerControls: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: "space-evenly",
         alignItems: 'center',
     },
     playButton: {
@@ -433,10 +418,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     detailsContainer: {
-        padding: 20,
+        padding: 0,
         paddingBottom: 100, // Extra padding for track button
     },
     sectionTitle: {
+        paddingHorizontal: 16,
         fontSize: 20,
         fontWeight: 'bold',
         color: '#FFB700',
@@ -449,6 +435,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     stepContainer: {
+        paddingHorizontal: 20,
         flexDirection: 'row',
         marginBottom: 15,
         alignItems: 'flex-start',

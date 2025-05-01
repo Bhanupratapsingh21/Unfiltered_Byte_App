@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     View,
     Text,
@@ -13,6 +13,7 @@ import {
     Animated,
     Easing
 } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Slider from '@react-native-community/slider';
 import { Audio } from 'expo-av';
 import { Ionicons, MaterialIcons, Feather } from '@expo/vector-icons';
@@ -20,6 +21,7 @@ import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { router } from 'expo-router';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -35,7 +37,13 @@ type ThemeMode = 'light' | 'dark';
 
 
 const PomodoroTimer = () => {
-    // Theme state
+    // bottem shet 
+    const sheetRef = useRef<BottomSheet>(null);
+    const scrollY = useRef(new Animated.Value(0)).current;
+    const snapPoints = useMemo(() => ["25%", "50%", "90%"], []);
+
+
+
     // Theme state
     const [theme, setTheme] = useState<ThemeMode>(Appearance.getColorScheme() || 'light');
 
@@ -51,12 +59,18 @@ const PomodoroTimer = () => {
     const [isSoundEnabled, setIsSoundEnabled] = useState(true);
     const [isHapticFeedbackEnabled, setIsHapticFeedbackEnabled] = useState(true);
     const [autoStartNextTimer, setAutoStartNextTimer] = useState(true);
-    const [showSettings, setShowSettings] = useState(false);
     const [notificationToken, setNotificationToken] = useState<string | null>(null);
     const [areNotificationsEnabled, setAreNotificationsEnabled] = useState(true);
     const [notificationResponse, setNotificationResponse] = useState<Notifications.NotificationResponse | null>(null);
     const notificationListener = useRef<Notifications.Subscription>();
     const responseListener = useRef<Notifications.Subscription>();
+
+    const handleSnapPress = (index: number) => {
+        sheetRef.current?.snapToIndex(index);
+    };
+    const handleClosePress = () => {
+        sheetRef.current?.close();
+    };
 
     // Sound
     const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -427,460 +441,466 @@ const PomodoroTimer = () => {
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: currentColors.background }]}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={()=> router.back()} style={styles.themeButton}>
-                    <Feather
-                        name="arrow-left"
-                        size={24}
-                        color={currentColors.text}
-                    />
-                </TouchableOpacity>
-                <Text style={[styles.headerText, { color: currentColors.text }]}>Pomodoro Focus</Text>
-                <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
-                    <Feather
-                        name={theme === 'light' ? 'moon' : 'sun'}
-                        size={24}
-                        color={currentColors.text}
-                    />
-                </TouchableOpacity>
-            </View>
 
-            {/* Timer Display */}
-            <Animated.View
-                style={[
-                    styles.timerContainer,
-                    {
-                        transform: [{ scale: scaleAnim }],
-                        borderColor: getModeColor(),
-                    }
-                ]}
-            >
-                <Text style={[styles.timerText, { color: currentColors.text }]}>
-                    {formatTime(timeLeft)}
-                </Text>
-                <Text style={[styles.modeText, { color: getModeColor() }]}>
-                    {mode === 'work' ? 'Focus Time' :
-                        mode === 'break' ? 'Short Break' : 'Long Break'}
-                </Text>
-            </Animated.View>
-
-            {/* Progress Indicator */}
-            <View style={styles.progressContainer}>
-                {Array.from({ length: longBreakInterval }).map((_, i) => (
-                    <View
-                        key={i}
-                        style={[
-                            styles.progressDot,
-                            { backgroundColor: currentColors.border },
-                            i < sessionsCompleted % longBreakInterval && {
-                                backgroundColor: getModeColor(),
-                            }
-                        ]}
-                    />
-                ))}
-            </View>
-
-            {/* Timer Controls */}
-            <View style={styles.controlsContainer}>
-                {!isActive ? (
-                    <TouchableOpacity
-                        style={[styles.controlButton, { backgroundColor: currentColors.primary }]}
-                        onPress={startTimer}
-                    >
-                        <Ionicons name="play" size={32} color={currentColors.background} />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <View style={[styles.container, { backgroundColor: currentColors.background }]}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.themeButton}>
+                        <Feather
+                            name="arrow-left"
+                            size={24}
+                            color={currentColors.text}
+                        />
                     </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity
-                        style={[styles.controlButton, { backgroundColor: '#FF5722' }]}
-                        onPress={pauseTimer}
-                    >
-                        <Ionicons name="pause" size={32} color={currentColors.background} />
+                    <Text style={[styles.headerText, { color: currentColors.text }]}>Pomodoro Focus</Text>
+                    <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
+                        <Feather
+                            name={theme === 'light' ? 'moon' : 'sun'}
+                            size={24}
+                            color={currentColors.text}
+                        />
                     </TouchableOpacity>
-                )}
+                </View>
 
-                <TouchableOpacity
-                    style={[styles.controlButton, { backgroundColor: currentColors.break }]}
-                    onPress={skipTimer}
-                >
-                    <MaterialIcons name="skip-next" size={32} color={currentColors.background} />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.controlButton, { backgroundColor: currentColors.secondaryText }]}
-                    onPress={resetTimer}
-                >
-                    <MaterialIcons name="replay" size={32} color={currentColors.background} />
-                </TouchableOpacity>
-            </View>
-
-            {/* Settings Toggle */}
-            <TouchableOpacity
-                style={styles.settingsToggle}
-                onPress={() => {
-                    setShowSettings(!showSettings);
-                    if (isHapticFeedbackEnabled) {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }
-                }}
-            >
-                <Animated.View style={{
-                    transform: [{
-                        rotate: rotateAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ['0deg', '180deg']
-                        })
-                    }]
-                }}>
-                    <Feather
-                        name={showSettings ? 'chevron-up' : 'chevron-down'}
-                        size={28}
-                        color={currentColors.text}
-                    />
-                </Animated.View>
-                <Text style={[styles.settingsToggleText, { color: currentColors.text }]}>
-                    {showSettings ? 'Hide Settings' : 'Show Settings'}
-                </Text>
-            </TouchableOpacity>
-
-            {/* Configuration Panel */}
-            {showSettings && (
-                <ScrollView
+                {/* Timer Display */}
+                <Animated.View
                     style={[
-                        styles.configContainer,
-                        { backgroundColor: currentColors.card }
+                        styles.timerContainer,
+                        {
+                            transform: [{ scale: scaleAnim }],
+                            borderColor: getModeColor(),
+                        }
                     ]}
-                    showsVerticalScrollIndicator={false}
                 >
-                    {/* Mode Selector */}
-                    <View style={styles.modeSelector}>
-                        <TouchableOpacity
+                    <Text style={[styles.timerText, { color: currentColors.text }]}>
+                        {formatTime(timeLeft)}
+                    </Text>
+                    <Text style={[styles.modeText, { color: getModeColor() }]}>
+                        {mode === 'work' ? 'Focus Time' :
+                            mode === 'break' ? 'Short Break' : 'Long Break'}
+                    </Text>
+                </Animated.View>
+
+                {/* Progress Indicator */}
+                <View style={styles.progressContainer}>
+                    {Array.from({ length: longBreakInterval }).map((_, i) => (
+                        <View
+                            key={i}
                             style={[
-                                styles.modeButton,
+                                styles.progressDot,
                                 { backgroundColor: currentColors.border },
-                                mode === 'work' && {
-                                    backgroundColor: currentColors.work,
+                                i < sessionsCompleted % longBreakInterval && {
+                                    backgroundColor: getModeColor(),
                                 }
                             ]}
-                            onPress={() => changeMode('work')}
-                        >
-                            <Text style={[
-                                styles.modeButtonText,
-                                { color: currentColors.text },
-                                mode === 'work' && { color: '#FFFFFF' }
-                            ]}>
-                                Work
-                            </Text>
-                        </TouchableOpacity>
+                        />
+                    ))}
+                </View>
 
+                {/* Timer Controls */}
+                <View style={styles.controlsContainer}>
+                    {!isActive ? (
                         <TouchableOpacity
-                            style={[
-                                styles.modeButton,
-                                { backgroundColor: currentColors.border },
-                                mode === 'break' && {
-                                    backgroundColor: currentColors.break,
-                                }
-                            ]}
-                            onPress={() => changeMode('break')}
+                            style={[styles.controlButton, { backgroundColor: currentColors.primary }]}
+                            onPress={startTimer}
                         >
-                            <Text style={[
-                                styles.modeButtonText,
-                                { color: currentColors.text },
-                                mode === 'break' && { color: '#FFFFFF' }
-                            ]}>
-                                Break
-                            </Text>
+                            <Ionicons name="play" size={32} color={currentColors.background} />
                         </TouchableOpacity>
-
+                    ) : (
                         <TouchableOpacity
-                            style={[
-                                styles.modeButton,
-                                { backgroundColor: currentColors.border },
-                                mode === 'longBreak' && {
-                                    backgroundColor: currentColors.longBreak,
-                                }
-                            ]}
-                            onPress={() => changeMode('longBreak')}
+                            style={[styles.controlButton, { backgroundColor: '#FF5722' }]}
+                            onPress={pauseTimer}
                         >
-                            <Text style={[
-                                styles.modeButtonText,
-                                { color: currentColors.text },
-                                mode === 'longBreak' && { color: '#FFFFFF' }
-                            ]}>
-                                Long Break
-                            </Text>
+                            <Ionicons name="pause" size={32} color={currentColors.background} />
                         </TouchableOpacity>
-                    </View>
-                    {/* Notification Settings */}
-                    <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
-                        <Text style={[styles.settingTitle, { color: currentColors.text }]}>Notification Settings</Text>
-                        <View style={styles.switchContainer}>
-                            <View style={styles.switchLabelContainer}>
-                                <Ionicons name="notifications-outline" size={20} color={currentColors.text} />
-                                <Text style={[styles.switchLabel, { color: currentColors.text }]}>
-                                    Enable Notifications
-                                </Text>
-                            </View>
-                            <Switch
-                                value={areNotificationsEnabled}
-                                onValueChange={async (value) => {
-                                    setAreNotificationsEnabled(value);
-                                    if (value) {
-                                        await registerForPushNotificationsAsync();
-                                    } else {
-                                        await cancelAllNotifications();
-                                    }
-                                }}
-                                trackColor={{ false: currentColors.border, true: currentColors.primary }}
-                                thumbColor="#FFFFFF"
-                            />
-                        </View>
-                    </View>
-                    {/* Time Settings */}
-                    <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
-                        <Text style={[styles.settingTitle, { color: currentColors.text }]}>Time Settings (minutes)</Text>
+                    )}
 
-                        <View style={styles.settingItem}>
-                            <View style={styles.settingLabelContainer}>
-                                <Ionicons name="time-outline" size={20} color={currentColors.work} />
-                                <Text style={[styles.settingLabel, { color: currentColors.text }]}>
-                                    Work Time: {workTime}
-                                </Text>
-                            </View>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={1}
-                                maximumValue={60}
-                                step={1}
-                                value={workTime}
-                                onValueChange={setWorkTime}
-                                minimumTrackTintColor={currentColors.work}
-                                maximumTrackTintColor={currentColors.border}
-                                thumbTintColor={currentColors.work}
-                            />
-                        </View>
+                    <TouchableOpacity
+                        style={[styles.controlButton, { backgroundColor: currentColors.break }]}
+                        onPress={skipTimer}
+                    >
+                        <MaterialIcons name="skip-next" size={32} color={currentColors.background} />
+                    </TouchableOpacity>
 
-                        <View style={styles.settingItem}>
-                            <View style={styles.settingLabelContainer}>
-                                <Ionicons name="cafe-outline" size={20} color={currentColors.break} />
-                                <Text style={[styles.settingLabel, { color: currentColors.text }]}>
-                                    Break Time: {breakTime}
-                                </Text>
-                            </View>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={1}
-                                maximumValue={30}
-                                step={1}
-                                value={breakTime}
-                                onValueChange={setBreakTime}
-                                minimumTrackTintColor={currentColors.break}
-                                maximumTrackTintColor={currentColors.border}
-                                thumbTintColor={currentColors.break}
-                            />
-                        </View>
+                    <TouchableOpacity
+                        style={[styles.controlButton, { backgroundColor: currentColors.secondaryText }]}
+                        onPress={resetTimer}
+                    >
+                        <MaterialIcons name="replay" size={32} color={currentColors.background} />
+                    </TouchableOpacity>
+                </View>
 
-                        <View style={styles.settingItem}>
-                            <View style={styles.settingLabelContainer}>
-                                <Ionicons name="bed-outline" size={20} color={currentColors.longBreak} />
-                                <Text style={[styles.settingLabel, { color: currentColors.text }]}>
-                                    Long Break Time: {longBreakTime}
-                                </Text>
-                            </View>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={5}
-                                maximumValue={30}
-                                step={1}
-                                value={longBreakTime}
-                                onValueChange={setLongBreakTime}
-                                minimumTrackTintColor={currentColors.longBreak}
-                                maximumTrackTintColor={currentColors.border}
-                                thumbTintColor={currentColors.longBreak}
-                            />
-                        </View>
+                {/* Settings Toggle */}
+                <TouchableOpacity
+                    style={styles.settingsToggle}
+                    onPress={() => {
+                        handleSnapPress(2);
+                        if (isHapticFeedbackEnabled) {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        }
+                    }}
+                >
+                    <Animated.View style={{
+                        transform: [{
+                            rotate: rotateAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0deg', '180deg']
+                            })
+                        }]
+                    }}>
+                    </Animated.View>
+                    <Text style={[styles.settingsToggleText, { color: currentColors.text }]}>
+                        Show Settings
+                    </Text>
+                </TouchableOpacity>
 
-                        <View style={styles.settingItem}>
-                            <View style={styles.settingLabelContainer}>
-                                <Ionicons name="repeat-outline" size={20} color={currentColors.primary} />
-                                <Text style={[styles.settingLabel, { color: currentColors.text }]}>
-                                    Long Break After: {longBreakInterval} sessions
-                                </Text>
-                            </View>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={2}
-                                maximumValue={8}
-                                step={1}
-                                value={longBreakInterval}
-                                onValueChange={setLongBreakInterval}
-                                minimumTrackTintColor={currentColors.primary}
-                                maximumTrackTintColor={currentColors.border}
-                                thumbTintColor={currentColors.primary}
-                            />
-                        </View>
-                    </View>
-
-                    {/* Sound Settings */}
-                    <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
-                        <Text style={[styles.settingTitle, { color: currentColors.text }]}>Sound Settings</Text>
-
-                        <View style={styles.switchContainer}>
-                            <View style={styles.switchLabelContainer}>
-                                <Ionicons name="volume-high-outline" size={20} color={currentColors.text} />
-                                <Text style={[styles.switchLabel, { color: currentColors.text }]}>
-                                    Enable Sounds
-                                </Text>
-                            </View>
-                            <Switch
-                                value={isSoundEnabled}
-                                onValueChange={setIsSoundEnabled}
-                                trackColor={{ false: currentColors.border, true: currentColors.primary }}
-                                thumbColor="#FFFFFF"
-                            />
-                        </View>
-
-                        <View style={styles.settingItem}>
-                            <View style={styles.settingLabelContainer}>
-                                <Ionicons name="musical-notes-outline" size={20} color={currentColors.text} />
-                                <Text style={[styles.settingLabel, { color: currentColors.text }]}>
-                                    Alarm Sound
-                                </Text>
-                            </View>
-                            <View style={styles.soundOptions}>
-                                {alarmSounds.map(sound => (
-                                    <TouchableOpacity
-                                        key={sound.id}
-                                        style={[
-                                            styles.soundOption,
-                                            {
-                                                backgroundColor: currentColors.border,
-                                                opacity: isSoundEnabled ? 1 : 0.6
-                                            },
-                                            selectedSound === sound.id && {
-                                                backgroundColor: currentColors.primary,
-                                            }
-                                        ]}
-                                        onPress={() => setSelectedSound(sound.id)}
-                                        disabled={!isSoundEnabled}
-                                    >
-                                        <Feather
-                                            name={sound.icon as keyof typeof Feather.glyphMap}
-                                            size={16}
-                                            color={
-                                                selectedSound === sound.id ?
-                                                    currentColors.background :
-                                                    currentColors.text
-                                            }
-                                        />
-                                        <Text style={[
-                                            styles.soundOptionText,
-                                            {
-                                                color: selectedSound === sound.id ?
-                                                    currentColors.background :
-                                                    currentColors.text
-                                            },
-                                        ]}>
-                                            {sound.name}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
-
-                        <View style={styles.settingItem}>
-                            <View style={styles.settingLabelContainer}>
-                                <Ionicons name="volume-medium-outline" size={20} color={currentColors.text} />
-                                <Text style={[styles.settingLabel, { color: currentColors.text }]}>
-                                    Volume: {Math.round(volume * 100)}%
-                                </Text>
-                            </View>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={0}
-                                maximumValue={1}
-                                step={0.1}
-                                value={volume}
-                                onValueChange={setVolume}
-                                minimumTrackTintColor={currentColors.primary}
-                                maximumTrackTintColor={currentColors.border}
-                                thumbTintColor={currentColors.primary}
-                                disabled={!isSoundEnabled}
-                            />
-                        </View>
-                    </View>
-
-                    {/* Haptic Feedback */}
-                    <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
-                        <Text style={[styles.settingTitle, { color: currentColors.text }]}>Haptic Feedback</Text>
-                        <View style={styles.switchContainer}>
-                            <View style={styles.switchLabelContainer}>
-                                <Ionicons name="phone-portrait-outline" size={20} color={currentColors.text} />
-                                <Text style={[styles.switchLabel, { color: currentColors.text }]}>
-                                    Enable Vibration
-                                </Text>
-                            </View>
-                            <Switch
-                                value={isHapticFeedbackEnabled}
-                                onValueChange={setIsHapticFeedbackEnabled}
-                                trackColor={{ false: currentColors.border, true: currentColors.primary }}
-                                thumbColor="#FFFFFF"
-                            />
-                        </View>
-                    </View>
-
-                    {/* Timer Behavior */}
-                    <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
-                        <Text style={[styles.settingTitle, { color: currentColors.text }]}>Timer Behavior</Text>
-                        <View style={styles.switchContainer}>
-                            <View style={styles.switchLabelContainer}>
-                                <Ionicons name="play-circle-outline" size={20} color={currentColors.text} />
-                                <Text style={[styles.switchLabel, { color: currentColors.text }]}>
-                                    Auto-start next timer
-                                </Text>
-                            </View>
-                            <Switch
-                                value={autoStartNextTimer}
-                                onValueChange={setAutoStartNextTimer}
-                                trackColor={{ false: currentColors.border, true: currentColors.primary }}
-                                thumbColor="#FFFFFF"
-                            />
-                        </View>
-                    </View>
-                </ScrollView>
-            )}
-
-            {/* Confetti Animation (hidden by default) */}
-            <Animated.View style={[
-                styles.confettiContainer,
-                { opacity: fadeAnim }
-            ]}>
-                {[...Array(50)].map((_, i) => (
-                    <View
-                        key={i}
+                <BottomSheet
+                    ref={sheetRef}
+                    index={0}
+                    snapPoints={snapPoints}
+                    enablePanDownToClose
+                    style={{ zIndex: 999 }} // 👈 helps lift above tabs
+                    containerStyle={{ zIndex: 10, elevation: 10 }}
+                    backgroundStyle={{ backgroundColor: currentColors.card }}
+                    handleIndicatorStyle={{ backgroundColor: currentColors.text }}
+                >
+                    <BottomSheetScrollView
                         style={[
-                            styles.confetti,
-                            {
-                                backgroundColor: [
-                                    currentColors.primary,
-                                    currentColors.work,
-                                    currentColors.break,
-                                    currentColors.longBreak
-                                ][i % 4],
-                                left: `${Math.random() * 100}%`,
-                                top: `${Math.random() * 100}%`,
-                                transform: [
-                                    { rotate: `${Math.random() * 360}deg` },
-                                    { scale: Math.random() * 0.5 + 0.5 }
-                                ]
-                            }
+                            styles.configContainer,
+                            { backgroundColor: currentColors.card }
                         ]}
-                    />
-                ))}
-            </Animated.View>
+                        showsVerticalScrollIndicator={false}
+                    >
+                        {/* Mode Selector */}
+                        <View style={styles.modeSelector}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.modeButton,
+                                    { backgroundColor: currentColors.border },
+                                    mode === 'work' && {
+                                        backgroundColor: currentColors.work,
+                                    }
+                                ]}
+                                onPress={() => changeMode('work')}
+                            >
+                                <Text style={[
+                                    styles.modeButtonText,
+                                    { color: currentColors.text },
+                                    mode === 'work' && { color: '#FFFFFF' }
+                                ]}>
+                                    Work
+                                </Text>
+                            </TouchableOpacity>
 
-        </View>
+                            <TouchableOpacity
+                                style={[
+                                    styles.modeButton,
+                                    { backgroundColor: currentColors.border },
+                                    mode === 'break' && {
+                                        backgroundColor: currentColors.break,
+                                    }
+                                ]}
+                                onPress={() => changeMode('break')}
+                            >
+                                <Text style={[
+                                    styles.modeButtonText,
+                                    { color: currentColors.text },
+                                    mode === 'break' && { color: '#FFFFFF' }
+                                ]}>
+                                    Break
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.modeButton,
+                                    { backgroundColor: currentColors.border },
+                                    mode === 'longBreak' && {
+                                        backgroundColor: currentColors.longBreak,
+                                    }
+                                ]}
+                                onPress={() => changeMode('longBreak')}
+                            >
+                                <Text style={[
+                                    styles.modeButtonText,
+                                    { color: currentColors.text },
+                                    mode === 'longBreak' && { color: '#FFFFFF' }
+                                ]}>
+                                    Long Break
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                        {/* Notification Settings */}
+                        <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
+                            <Text style={[styles.settingTitle, { color: currentColors.text }]}>Notification Settings</Text>
+                            <View style={styles.switchContainer}>
+                                <View style={styles.switchLabelContainer}>
+                                    <Ionicons name="notifications-outline" size={20} color={currentColors.text} />
+                                    <Text style={[styles.switchLabel, { color: currentColors.text }]}>
+                                        Enable Notifications
+                                    </Text>
+                                </View>
+                                <Switch
+                                    value={areNotificationsEnabled}
+                                    onValueChange={async (value) => {
+                                        setAreNotificationsEnabled(value);
+                                        if (value) {
+                                            await registerForPushNotificationsAsync();
+                                        } else {
+                                            await cancelAllNotifications();
+                                        }
+                                    }}
+                                    trackColor={{ false: currentColors.border, true: currentColors.primary }}
+                                    thumbColor="#FFFFFF"
+                                />
+                            </View>
+                        </View>
+                        {/* Time Settings */}
+                        <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
+                            <Text style={[styles.settingTitle, { color: currentColors.text }]}>Time Settings (minutes)</Text>
+
+                            <View style={styles.settingItem}>
+                                <View style={styles.settingLabelContainer}>
+                                    <Ionicons name="time-outline" size={20} color={currentColors.work} />
+                                    <Text style={[styles.settingLabel, { color: currentColors.text }]}>
+                                        Work Time: {workTime}
+                                    </Text>
+                                </View>
+                                <Slider
+                                    style={styles.slider}
+                                    minimumValue={1}
+                                    maximumValue={60}
+                                    step={1}
+                                    value={workTime}
+                                    onValueChange={setWorkTime}
+                                    minimumTrackTintColor={currentColors.work}
+                                    maximumTrackTintColor={currentColors.border}
+                                    thumbTintColor={currentColors.work}
+                                />
+                            </View>
+
+                            <View style={styles.settingItem}>
+                                <View style={styles.settingLabelContainer}>
+                                    <Ionicons name="cafe-outline" size={20} color={currentColors.break} />
+                                    <Text style={[styles.settingLabel, { color: currentColors.text }]}>
+                                        Break Time: {breakTime}
+                                    </Text>
+                                </View>
+                                <Slider
+                                    style={styles.slider}
+                                    minimumValue={1}
+                                    maximumValue={30}
+                                    step={1}
+                                    value={breakTime}
+                                    onValueChange={setBreakTime}
+                                    minimumTrackTintColor={currentColors.break}
+                                    maximumTrackTintColor={currentColors.border}
+                                    thumbTintColor={currentColors.break}
+                                />
+                            </View>
+
+                            <View style={styles.settingItem}>
+                                <View style={styles.settingLabelContainer}>
+                                    <Ionicons name="bed-outline" size={20} color={currentColors.longBreak} />
+                                    <Text style={[styles.settingLabel, { color: currentColors.text }]}>
+                                        Long Break Time: {longBreakTime}
+                                    </Text>
+                                </View>
+                                <Slider
+                                    style={styles.slider}
+                                    minimumValue={5}
+                                    maximumValue={30}
+                                    step={1}
+                                    value={longBreakTime}
+                                    onValueChange={setLongBreakTime}
+                                    minimumTrackTintColor={currentColors.longBreak}
+                                    maximumTrackTintColor={currentColors.border}
+                                    thumbTintColor={currentColors.longBreak}
+                                />
+                            </View>
+
+                            <View style={styles.settingItem}>
+                                <View style={styles.settingLabelContainer}>
+                                    <Ionicons name="repeat-outline" size={20} color={currentColors.primary} />
+                                    <Text style={[styles.settingLabel, { color: currentColors.text }]}>
+                                        Long Break After: {longBreakInterval} sessions
+                                    </Text>
+                                </View>
+                                <Slider
+                                    style={styles.slider}
+                                    minimumValue={2}
+                                    maximumValue={8}
+                                    step={1}
+                                    value={longBreakInterval}
+                                    onValueChange={setLongBreakInterval}
+                                    minimumTrackTintColor={currentColors.primary}
+                                    maximumTrackTintColor={currentColors.border}
+                                    thumbTintColor={currentColors.primary}
+                                />
+                            </View>
+                        </View>
+
+                        {/* Sound Settings */}
+                        <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
+                            <Text style={[styles.settingTitle, { color: currentColors.text }]}>Sound Settings</Text>
+
+                            <View style={styles.switchContainer}>
+                                <View style={styles.switchLabelContainer}>
+                                    <Ionicons name="volume-high-outline" size={20} color={currentColors.text} />
+                                    <Text style={[styles.switchLabel, { color: currentColors.text }]}>
+                                        Enable Sounds
+                                    </Text>
+                                </View>
+                                <Switch
+                                    value={isSoundEnabled}
+                                    onValueChange={setIsSoundEnabled}
+                                    trackColor={{ false: currentColors.border, true: currentColors.primary }}
+                                    thumbColor="#FFFFFF"
+                                />
+                            </View>
+
+                            <View style={styles.settingItem}>
+                                <View style={styles.settingLabelContainer}>
+                                    <Ionicons name="musical-notes-outline" size={20} color={currentColors.text} />
+                                    <Text style={[styles.settingLabel, { color: currentColors.text }]}>
+                                        Alarm Sound
+                                    </Text>
+                                </View>
+                                <View style={styles.soundOptions}>
+                                    {alarmSounds.map(sound => (
+                                        <TouchableOpacity
+                                            key={sound.id}
+                                            style={[
+                                                styles.soundOption,
+                                                {
+                                                    backgroundColor: currentColors.border,
+                                                    opacity: isSoundEnabled ? 1 : 0.6
+                                                },
+                                                selectedSound === sound.id && {
+                                                    backgroundColor: currentColors.primary,
+                                                }
+                                            ]}
+                                            onPress={() => setSelectedSound(sound.id)}
+                                            disabled={!isSoundEnabled}
+                                        >
+                                            <Feather
+                                                name={sound.icon as keyof typeof Feather.glyphMap}
+                                                size={16}
+                                                color={
+                                                    selectedSound === sound.id ?
+                                                        currentColors.background :
+                                                        currentColors.text
+                                                }
+                                            />
+                                            <Text style={[
+                                                styles.soundOptionText,
+                                                {
+                                                    color: selectedSound === sound.id ?
+                                                        currentColors.background :
+                                                        currentColors.text
+                                                },
+                                            ]}>
+                                                {sound.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+
+                            <View style={styles.settingItem}>
+                                <View style={styles.settingLabelContainer}>
+                                    <Ionicons name="volume-medium-outline" size={20} color={currentColors.text} />
+                                    <Text style={[styles.settingLabel, { color: currentColors.text }]}>
+                                        Volume: {Math.round(volume * 100)}%
+                                    </Text>
+                                </View>
+                                <Slider
+                                    style={styles.slider}
+                                    minimumValue={0}
+                                    maximumValue={1}
+                                    step={0.1}
+                                    value={volume}
+                                    onValueChange={setVolume}
+                                    minimumTrackTintColor={currentColors.primary}
+                                    maximumTrackTintColor={currentColors.border}
+                                    thumbTintColor={currentColors.primary}
+                                    disabled={!isSoundEnabled}
+                                />
+                            </View>
+                        </View>
+
+                        {/* Haptic Feedback */}
+                        <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
+                            <Text style={[styles.settingTitle, { color: currentColors.text }]}>Haptic Feedback</Text>
+                            <View style={styles.switchContainer}>
+                                <View style={styles.switchLabelContainer}>
+                                    <Ionicons name="phone-portrait-outline" size={20} color={currentColors.text} />
+                                    <Text style={[styles.switchLabel, { color: currentColors.text }]}>
+                                        Enable Vibration
+                                    </Text>
+                                </View>
+                                <Switch
+                                    value={isHapticFeedbackEnabled}
+                                    onValueChange={setIsHapticFeedbackEnabled}
+                                    trackColor={{ false: currentColors.border, true: currentColors.primary }}
+                                    thumbColor="#FFFFFF"
+                                />
+                            </View>
+                        </View>
+
+                        {/* Timer Behavior */}
+                        <View style={[styles.settingGroup, { backgroundColor: currentColors.background }]}>
+                            <Text style={[styles.settingTitle, { color: currentColors.text }]}>Timer Behavior</Text>
+                            <View style={styles.switchContainer}>
+                                <View style={styles.switchLabelContainer}>
+                                    <Ionicons name="play-circle-outline" size={20} color={currentColors.text} />
+                                    <Text style={[styles.switchLabel, { color: currentColors.text }]}>
+                                        Auto-start next timer
+                                    </Text>
+                                </View>
+                                <Switch
+                                    value={autoStartNextTimer}
+                                    onValueChange={setAutoStartNextTimer}
+                                    trackColor={{ false: currentColors.border, true: currentColors.primary }}
+                                    thumbColor="#FFFFFF"
+                                />
+                            </View>
+                        </View>
+                    </BottomSheetScrollView>
+                </BottomSheet>
+
+                {/* Confetti Animation (hidden by default) */}
+                <Animated.View style={[
+                    styles.confettiContainer,
+                    { opacity: fadeAnim }
+                ]}>
+                    {[...Array(50)].map((_, i) => (
+                        <View
+                            key={i}
+                            style={[
+                                styles.confetti,
+                                {
+                                    backgroundColor: [
+                                        currentColors.primary,
+                                        currentColors.work,
+                                        currentColors.break,
+                                        currentColors.longBreak
+                                    ][i % 4],
+                                    left: `${Math.random() * 100}%`,
+                                    top: `${Math.random() * 100}%`,
+                                    transform: [
+                                        { rotate: `${Math.random() * 360}deg` },
+                                        { scale: Math.random() * 0.5 + 0.5 }
+                                    ]
+                                }
+                            ]}
+                        />
+                    ))}
+                </Animated.View>
+
+            </View>
+        </GestureHandlerRootView>
     );
 };
 
@@ -962,7 +982,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
     },
     configContainer: {
-        maxHeight: Dimensions.get('window').height * 0.5,
         borderRadius: 15,
         marginBottom: 10,
         padding: 15,

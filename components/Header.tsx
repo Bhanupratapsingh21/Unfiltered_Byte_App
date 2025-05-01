@@ -47,11 +47,11 @@ export default function Header() {
         >
             <Image source={require("@/assets/images/logomainwithouttegline.png")} style={styles.logo} />
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TouchableOpacity onPress={() => router.push("/")} style={styles.menuButton}>
-                    <Ionicons name="search" size={20} color="white" />
+                <TouchableOpacity onPress={() => router.push("/Profile")} style={styles.menuButton}>
+                    <Ionicons name="person" size={20} color="white" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/")} style={styles.menuButton}>
-                    <Ionicons name="notifications-outline" size={20} color="white" />
+                <TouchableOpacity onPress={() => router.push("/Trainings/Pomodoro")} style={styles.menuButton}>
+                    <Ionicons name="alarm" size={20} color="white" />
                 </TouchableOpacity>
             </View>
         </BlurView>
