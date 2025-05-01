@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
         paddingRight: '30%', // Make space for the image
     },
     textContent: {
-        zIndex  : 5,
+        zIndex: 5,
         flex: 1,
         padding: 20,
         justifyContent: "space-between",
@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         alignSelf: 'flex-start',
         minWidth: 100,
+        maxWidth: 200,
     },
     playButtonText: {
         fontSize: 16,
@@ -225,17 +226,17 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
     imageContainer: {
-        zIndex  : 4,
+        zIndex: 3,
         position: 'absolute',
         right: 0,
         top: 0,
         bottom: 0,
-        width: '45%',
+        width: '30%',
         justifyContent: 'center',
         alignItems: "center"
     },
     image: {
-        width: '90%',
+        width: '80%',
         height: '100%',
         aspectRatio: 1, // Maintain aspect ratio
     },

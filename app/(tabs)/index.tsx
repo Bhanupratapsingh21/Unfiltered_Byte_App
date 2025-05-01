@@ -29,7 +29,7 @@ import fetchComments from '@/lib/fetchComments';
 const IndexScreen = () => {
   const sheetRef = useRef<BottomSheet>(null);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const snapPoints = useMemo(() => ["1%", "80%", "90%", "85%"], []);
+  const snapPoints = useMemo(() => ["1%", "80%", "90%", "85%"], ["90%"]);
 
   const { user } = useAuthStore(); // jwt token
 
@@ -222,43 +222,48 @@ const IndexScreen = () => {
           backgroundStyle={{ backgroundColor: "#000000" }}
           handleIndicatorStyle={{ backgroundColor: "#444" }}
         >
-          {selectedBlog && !commentLoading ? (
-            <>
-              <View style={{ padding: 16, paddingBottom: 5 }}>
-                <Text style={{ fontSize: 18, textAlign: "center", color: "#fff", fontWeight: "bold" }}>
-                  Swipe Up To Comment ↑
-                </Text>
-              </View>
-              <BottomSheetFlatList
-                data={comments}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => <CommentCard comment={item} />}
-                contentContainerStyle={[styles.commentContainerDark, { marginBottom: 100 }]}
-                onEndReached={handleLoadMoreComments}
-                onEndReachedThreshold={0.5}
-              />
-
-              {commentError && (
-                <View style={{ marginBottom: 50, padding: 20, flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 16, color: "red", textAlign: 'center' }}>
-                    {commentError}
-                  </Text>
-                </View>
-              )}
-
-              <View style={styles.inputContainer}>
-                <CommentInput
-                  postId={selectedBlog._id}
-                  commentOn="Post"
-                  setComments={setComments}
-                />
-              </View>
-            </>
-          ) : (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Spinner />
+          <>
+            <View style={{ padding: 16, paddingBottom: 5 }}>
+              <Text style={{ fontSize: 18, textAlign: "center", color: "#fff", fontWeight: "bold" }}>
+                Swipe Up To Comment ↑
+              </Text>
             </View>
-          )}
+            {selectedBlog && !commentLoading ? (
+
+              <>
+
+                <BottomSheetFlatList
+                  data={comments}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item }) => <CommentCard comment={item} />}
+                  contentContainerStyle={[styles.commentContainerDark, { marginBottom: 100 }]}
+                  onEndReached={handleLoadMoreComments}
+                  onEndReachedThreshold={0.5}
+                />
+
+                {commentError && (
+                  <View style={{ marginBottom: 50, padding: 20, flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 16, color: "red", textAlign: 'center' }}>
+                      {commentError}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.inputContainer}>
+                  <CommentInput
+                    postId={selectedBlog._id}
+                    commentOn="Post"
+                    setComments={setComments}
+                  />
+                </View>
+
+              </>
+            ) : (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Spinner />
+              </View>
+            )}
+          </>
         </BottomSheet>
 
       </View>

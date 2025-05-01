@@ -86,8 +86,8 @@ const BlogCard: React.FC<BlogCardProps> = ({
         try {
             await Share.share({
                 title: 'Check this post!',
-                message: caption + '\n\nSee more in our app!',
-                url: postImage || undefined,
+                message: 'See more in our app!',
+                url: "https://unfiltered-byte.bpss.tech/",
             });
         } catch (error) {
             console.error('Error sharing', error);

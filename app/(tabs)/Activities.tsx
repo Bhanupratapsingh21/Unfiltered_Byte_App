@@ -70,7 +70,7 @@ const IndexScreen = () => {
                       transform: [{ translateY: streakTranslate }],
                       opacity: streakOpacity,
                       paddingHorizontal: 0,
-                      paddingTop: Platform.OS === "ios" ? 100 : 90,
+                      paddingTop: Platform.OS === "ios" ? 100 : 80,
                     }}
                   >
                     <Categories />
