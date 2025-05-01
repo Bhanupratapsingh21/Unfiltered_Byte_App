@@ -40,7 +40,7 @@ export default function TabLayout() {
             case "Upload":
               iconName = focused ? "add-circle" : "add-circle-outline";
               break;
-            case "Profile":
+            case "profile":
               iconName = focused ? "person" : "person-outline";
               break;
             case "Activities":
@@ -76,7 +76,7 @@ export default function TabLayout() {
       <Tabs.Screen name="index" options={{ title: "Home" }} />
       <Tabs.Screen name="Upload" options={{ title: "Upload" }} />
       <Tabs.Screen name="Activities" options={{ title: "Activities" }} />
-      <Tabs.Screen name="Profile" options={{ title: "Profile" }} />
+      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>
   );
 }
