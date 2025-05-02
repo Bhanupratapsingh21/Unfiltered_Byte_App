@@ -232,31 +232,41 @@ const IndexScreen = () => {
               </Text>
             </View>
 
+            {selectedBlog && !commentLoading ? (
 
-            <BottomSheetFlatList
-              data={comments}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => <CommentCard comment={item} />}
-              contentContainerStyle={[styles.commentContainerDark, { marginBottom: 100 }]}
-              onEndReached={handleLoadMoreComments}
-              onEndReachedThreshold={0.5}
-            />
+              <>
 
-            {commentError && (
-              <View style={{ marginBottom: 50, padding: 20, flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 16, color: "red", textAlign: 'center' }}>
-                  {commentError}
-                </Text>
+                <BottomSheetFlatList
+                  data={comments}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item }) => <CommentCard comment={item} />}
+                  contentContainerStyle={[styles.commentContainerDark, { marginBottom: 100 }]}
+                  onEndReached={handleLoadMoreComments}
+                  onEndReachedThreshold={0.5}
+                />
+
+                {commentError && (
+                  <View style={{ marginBottom: 50, padding: 20, flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 16, color: "red", textAlign: 'center' }}>
+                      {commentError}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.inputContainer}>
+                  <CommentInput
+                    postId={selectedBlog._id}
+                    commentOn="Post"
+                    setComments={setComments}
+                  />
+                </View>
+
+              </>
+            ) : (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Spinner />
               </View>
             )}
-
-            <View style={styles.inputContainer}>
-              <CommentInput
-                postId={selectedBlog?._id}
-                commentOn="Post"
-                setComments={setComments}
-              />
-            </View>
 
           </>
 
