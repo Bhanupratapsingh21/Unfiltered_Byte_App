@@ -13,13 +13,13 @@ export default function StreakCard() {
     const user = useAuthStore(state => state.user);
     const streaks = useAuthStore(state => state.Streak);
 
-    const streak = streaks?.streak ;
+    const streak = streaks?.streak;
     const streakText = streak > 1 ? `${streak} days` : `${streak} day`;
 
     useEffect(() => {
         const today = new Date();
         const day = today.getDate();
-        const firstDigit = Math.floor(day / 10) ; // Get the first digit or default to 1
+        const firstDigit = Math.floor(day / 10); // Get the first digit or default to 1
         activitiesData[firstDigit].exerciseName
 
         const activity = activitiesData[firstDigit]?.exerciseName || "an activity";
@@ -53,7 +53,7 @@ export default function StreakCard() {
             {/* Greeting & Streak Info */}
             <View style={{ gap: 3, marginTop: 12 }}>
                 <Text style={styles.greetingText}>Hi, {userprofile?.username || 'Dev'} 👋</Text>
-                <Text style={styles.mainText}>Streak : {streakText}</Text>
+                <Text style={styles.mainText}>Streak : {streakText || 1}</Text>
             </View>
 
             {/* Activity Info */}

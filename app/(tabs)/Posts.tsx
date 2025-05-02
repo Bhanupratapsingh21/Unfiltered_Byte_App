@@ -232,7 +232,7 @@ const IndexScreen = () => {
               </Text>
             </View>
 
-            {selectedBlog && !commentLoading ? (
+            {!commentLoading ? (
 
               <>
 
@@ -255,7 +255,7 @@ const IndexScreen = () => {
 
                 <View style={styles.inputContainer}>
                   <CommentInput
-                    postId={selectedBlog._id}
+                    postId={selectedBlog?._id}
                     commentOn="Post"
                     setComments={setComments}
                   />
