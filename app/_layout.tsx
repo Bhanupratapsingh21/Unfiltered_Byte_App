@@ -102,6 +102,7 @@ export default function RootLayout() {
 
   // Render app
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <ThemeProvider value={DefaultTheme}>
       <ErrorBoundary
         fallback={
@@ -110,10 +111,11 @@ export default function RootLayout() {
           </View>
         }
       >
-        <GestureHandlerRootView style={{ flex: 1 }}>
+      
           <Slot />
-        </GestureHandlerRootView>
+      
       </ErrorBoundary>
     </ThemeProvider >
+    </GestureHandlerRootView>
   );
 }

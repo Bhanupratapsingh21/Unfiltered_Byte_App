@@ -9,22 +9,22 @@ const CARD_HEIGHT = 184;
 
 export default function StreakCard() {
     const userprofile = useAuthStore(state => state.userProfile);
-    const [Activity , setActivity] = useState<String>("");
+    const [Activity, setActivity] = useState<String>("");
     const user = useAuthStore(state => state.user);
     const streaks = useAuthStore(state => state.Streak);
 
-    const streak = streaks?.streak || 1;
+    const streak = streaks?.streak ;
     const streakText = streak > 1 ? `${streak} days` : `${streak} day`;
-    
-    useEffect(()=>{
+
+    useEffect(() => {
         const today = new Date();
         const day = today.getDate();
-        const firstDigit = Math.floor(day / 10) || 1; // Get the first digit or default to 1
+        const firstDigit = Math.floor(day / 10) ; // Get the first digit or default to 1
         activitiesData[firstDigit].exerciseName
-        
+
         const activity = activitiesData[firstDigit]?.exerciseName || "an activity";
         setActivity(`${activity}. Check it out in the Activities Section!`);
-    },[])
+    }, [])
     return (
 
         <View style={styles.card}>
